@@ -2,16 +2,35 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
-# Install build essentials if needed (e.g. for some python packages)
-RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
+# Install build essentials
+RUN apt-get update && apt-get install -y build-essential git && rm -rf /var/lib/apt/lists/*
 
+# Set HuggingFace cache directory
+ENV HF_HOME=/app/.cache/huggingface
+ENV TRANSFORMERS_CACHE=/app/.cache/huggingface
+ENV SENTENCE_TRANSFORMERS_HOME=/app/.cache/sentence_transformers
+
+# Copy and install dependencies first (for Docker layer caching)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Pre-download AI models at build time so there's no cold-start delay
+RUN python -c "\
+from transformers import pipeline; \
+print('Downloading emotion model...'); \
+pipeline('text-classification', model='j-hartmann/emotion-english-distilroberta-base', top_k=None); \
+print('Done!')"
+
+RUN python -c "\
+from sentence_transformers import SentenceTransformer; \
+print('Downloading embedding model...'); \
+SentenceTransformer('sentence-transformers/paraphrase-MiniLM-L3-v2'); \
+print('Done!')"
 
 # Copy the backend code
 COPY . .
 
-# Expose port
-EXPOSE 8000
+# HuggingFace Spaces requires port 7860
+EXPOSE 7860
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]

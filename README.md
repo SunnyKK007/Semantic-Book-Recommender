@@ -6,6 +6,13 @@ An AI-powered book recommendation engine that understands **emotions**, **tone**
 
 ---
 
+## 🌐 Live Demo
+
+- **Frontend (Live App):** [Semantic Book Recommender on Vercel](https://semantic-book-recommender.vercel.app)
+- **Backend API:** [Hosted on Hugging Face Spaces](https://sunny9523-semantic-book-recomender.hf.space)
+
+---
+
 ## 🌟 Why I Built This
 
 As a reader, I was frustrated by how shallow most book discovery tools are.
@@ -308,6 +315,36 @@ docker-compose up --build -d
 | CORS error in browser | Make sure backend is running on port 8000 |
 | Empty results | Google Books API has rate limits without a key — add `GOOGLE_BOOKS_API_KEY` in `backend/.env` |
 | MPS errors on Mac | Upgrade to latest PyTorch nightly for Apple Silicon support |
+
+---
+
+## ☁️ Deployment Guide
+
+This project is designed to be deployed across two free hosting platforms: **Vercel** (for the fast frontend) and **Hugging Face Spaces** (for the AI-heavy backend).
+
+### 1. Backend → Hugging Face Spaces (Docker)
+Hugging Face Spaces provides the necessary computing power to run the PyTorch/Transformers models.
+1. Create a new Space on [Hugging Face](https://huggingface.co/spaces).
+2. Choose **Docker** as the SDK.
+3. Clone the space locally, copy the `backend/` directory contents into it, and push it back to Hugging Face:
+   ```bash
+   git clone https://huggingface.co/spaces/YourUsername/YourSpaceName hf-space
+   cp -r backend/. hf-space/
+   cd hf-space
+   git add .
+   git commit -m "Deploy backend"
+   git push
+   ```
+4. Go to your Space Settings → **Variables and secrets**, and add a New Secret named `GOOGLE_BOOKS_API_KEY` with your API key.
+
+### 2. Frontend → Vercel
+1. Go to [Vercel](https://vercel.com/new) and import your GitHub repository.
+2. In the setup screen, click **Edit** next to **Root Directory** and type `frontend`.
+3. The Framework Preset will automatically switch to **Vite**.
+4. Open the **Environment Variables** dropdown and add:
+   - Name: `VITE_API_URL`
+   - Value: The direct API route to your Hugging Face space (e.g., `https://yourusername-spacename.hf.space`).
+5. Click **Deploy**.
 
 ---
 

@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+requests
+python-dotenv
+pandas
+numpy
+transformers
+torch
+langchain
+langchain-community
+langchain-huggingface
+langchain-chroma
+sentence-transformers
+tqdm

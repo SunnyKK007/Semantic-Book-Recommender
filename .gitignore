@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+.DS_Store
+
+# React/Node
+node_modules/
+dist/
+build/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Database
+chroma_db/
+backend/chroma_db/
+
+# IDEs
+.idea/
+.vscode/
+
+# Logs
+*.log

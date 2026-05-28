@@ -180,9 +180,14 @@ def _chromadb_fallback(query: str, category: Optional[str], limit: int) -> List[
     seen_isbns = set()
 
     try:
-        results = db_books.similarity_search(query, k=50)
+        results = db_books.similarity_search_with_score(query, k=50)
         
-        for res in results:
+        for res, score in results:
+            # L2 distance threshold (higher score = less similar)
+            # A score > 1.3 means the book is semantically unrelated to the query
+            if score > 1.3:
+                continue
+
             metadata = res.metadata
             isbn = str(metadata.get("isbn13"))
             

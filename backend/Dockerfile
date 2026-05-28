@@ -14,17 +14,17 @@ ENV SENTENCE_TRANSFORMERS_HOME=/app/.cache/sentence_transformers
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
 
-# Pre-download AI models at build time so there's no cold-start delay
+# Pre-download AI models at build time (files only, without loading into RAM)
 RUN python -c "\
-from transformers import pipeline; \
+from huggingface_hub import snapshot_download; \
 print('Downloading emotion model...'); \
-pipeline('text-classification', model='j-hartmann/emotion-english-distilroberta-base', top_k=None); \
+snapshot_download('j-hartmann/emotion-english-distilroberta-base'); \
 print('Done!')"
 
 RUN python -c "\
-from sentence_transformers import SentenceTransformer; \
+from huggingface_hub import snapshot_download; \
 print('Downloading embedding model...'); \
-SentenceTransformer('sentence-transformers/paraphrase-MiniLM-L3-v2'); \
+snapshot_download('sentence-transformers/paraphrase-MiniLM-L3-v2'); \
 print('Done!')"
 
 # Copy the backend code

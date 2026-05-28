@@ -5,11 +5,16 @@
 An AI-powered book recommendation engine that understands **emotions**, **tone**, and **semantic meaning** — not just matching words. Built with a FastAPI backend, a ChromaDB vector database, live Google Books integration, and a beautiful React + Framer Motion frontend.
 
 ---
-
 ## 🌐 Live Demo
 
-- **Frontend (Live App):** [Semantic Book Recommender on Vercel](https://semantic-book-recommender.vercel.app)
-- **Backend API:** [Hosted on Hugging Face Spaces](https://sunny9523-semantic-book-recomender.hf.space)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?style=for-the-badge&logo=vercel)](https://semantic-book-recommender-five.vercel.app/)
+[![Backend](https://img.shields.io/badge/Backend-Hugging%20Face-yellow?style=for-the-badge&logo=huggingface)](https://sunny9523-semantic-book-recomender.hf.space)
+[![Frontend](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-blue?style=for-the-badge&logo=react)](https://semantic-book-recommender-five.vercel.app/)
+
+
+
+> 🚀 **[Try it Live → https://auto-agentic-rag.vercel.app](https://semantic-book-recommender-five.vercel.app/)**
+
 
 ---
 

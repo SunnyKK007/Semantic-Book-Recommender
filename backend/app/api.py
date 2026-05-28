@@ -174,6 +174,7 @@ def _chromadb_fallback(query: str, category: Optional[str], limit: int) -> List[
     """
     Offline fallback: query ChromaDB when live fetch fails.
     Returns books from the vector store with optional category filtering.
+    ChromaDB's top-k already returns results ranked by similarity.
     """
     print("Falling back to ChromaDB offline mode...")
     fallback_books = []
@@ -187,20 +188,10 @@ def _chromadb_fallback(query: str, category: Optional[str], limit: int) -> List[
         except Exception:
             print("Could not get ChromaDB count.")
 
-        results = db_books.similarity_search_with_score(query, k=50)
-        print(f"ChromaDB returned {len(results)} raw results for query: '{query}'")
-        
-        if results:
-            # Log top 5 scores for debugging
-            top_scores = [(res.metadata.get('title', '?')[:40], round(score, 3)) for res, score in results[:5]]
-            print(f"Top 5 scores: {top_scores}")
+        results = db_books.similarity_search(query, k=limit + 20)
+        print(f"ChromaDB returned {len(results)} results for query: '{query}'")
 
-        for res, score in results:
-            # L2 distance threshold — paraphrase-MiniLM-L3-v2 produces
-            # distances in the 0.3–1.8 range. Only reject truly unrelated books.
-            if score > 1.8:
-                continue
-
+        for res in results:
             metadata = res.metadata
             isbn = str(metadata.get("isbn13"))
             

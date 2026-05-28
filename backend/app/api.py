@@ -180,12 +180,25 @@ def _chromadb_fallback(query: str, category: Optional[str], limit: int) -> List[
     seen_isbns = set()
 
     try:
+        # Log ChromaDB collection size for debugging
+        try:
+            db_count = db_books._collection.count()
+            print(f"ChromaDB contains {db_count} documents.")
+        except Exception:
+            print("Could not get ChromaDB count.")
+
         results = db_books.similarity_search_with_score(query, k=50)
+        print(f"ChromaDB returned {len(results)} raw results for query: '{query}'")
         
+        if results:
+            # Log top 5 scores for debugging
+            top_scores = [(res.metadata.get('title', '?')[:40], round(score, 3)) for res, score in results[:5]]
+            print(f"Top 5 scores: {top_scores}")
+
         for res, score in results:
-            # L2 distance threshold (higher score = less similar)
-            # A score > 1.3 means the book is semantically unrelated to the query
-            if score > 1.3:
+            # L2 distance threshold — paraphrase-MiniLM-L3-v2 produces
+            # distances in the 0.3–1.8 range. Only reject truly unrelated books.
+            if score > 1.8:
                 continue
 
             metadata = res.metadata
@@ -226,8 +239,11 @@ def _chromadb_fallback(query: str, category: Optional[str], limit: int) -> List[
                 break
                 
     except Exception as e:
+        import traceback
         print(f"ChromaDB fallback error: {e}")
+        traceback.print_exc()
 
+    print(f"ChromaDB fallback returning {len(fallback_books)} books.")
     return fallback_books
 
 

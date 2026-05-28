@@ -13,33 +13,6 @@ An AI-powered book recommendation engine that understands **emotions**, **tone**
 
 ---
 
-## ✨ Recent Upgrades
-
-This version upgrades the earlier project with:
-
-### 🔄 Hybrid Results Engine
-- **Live + Offline hybrid results** — live Google Books results appear first (⚡ Live badge), then ChromaDB fills remaining slots (🗄️ Offline badge) to deliver **30 books per search**
-- **Source badge on every book card** — users always know if a result is freshly fetched or from the local AI library
-
-### ⚡ Performance & UX
-- **Client-side tone sorting** — switching tones (Happy, Sad, Romantic, etc.) is now **instant** with zero API calls using `useMemo`
-- **Race condition fix** — eliminated the "No results" flash bug using request ID tracking instead of shared AbortController state
-- **Optimised caching** — cache key excludes tone (since tone only affects sort order), preventing unnecessary re-fetches
-- **Warning suppression** — silenced the `urllib3` LibreSSL warning for clean terminal output
-
-### 🏗️ Architecture
-- **Modular component architecture** — App.jsx refactored into 7 focused components (Navbar, Hero, FilterBar, HowItWorks, ResultsGrid, Footer, BookModal)
-- Thread-safe in-memory cache with `threading.Lock`
-- Background ChromaDB enrichment with quality filtering, ISBN deduplication, and 15K-entry LRU eviction
-- ChromaDB offline fallback when live results are unavailable
-- 32 genre filters and 19 emotional tones
-- Clickable book detail modal with emotion breakdown bars
-- Skeleton loading cards and polished card animations
-- Docker/Nginx `/api` proxy routing for production containers
-- Synced `hf-space/` backend deployment copy for Hugging Face Spaces
-
----
-
 ## 🌟 Why I Built This
 
 As a reader, I was frustrated by how shallow most book discovery tools are.

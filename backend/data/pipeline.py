@@ -1,5 +1,5 @@
-from backend.data.data_fetcher import GoogleBooksFetcher
-from backend.data.data_processor import DataProcessor
+from data.data_fetcher import GoogleBooksFetcher
+from data.data_processor import DataProcessor
 
 def run_pipeline(query="subject:fiction"):
     fetcher = GoogleBooksFetcher()

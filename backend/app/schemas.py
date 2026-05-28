@@ -19,3 +19,4 @@ class Book(BaseModel):
     surprise: Optional[float] = 0.0
     disgust: Optional[float] = 0.0
     neutral: Optional[float] = 0.0
+    source: Optional[str] = None

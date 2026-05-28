@@ -24,7 +24,7 @@ class GoogleBooksFetcher:
             "langRestrict": "en",
             "printType": "books"
         }
-        if self.api_key:
+        if self.api_key and self.api_key != "YOUR_API_KEY_HERE":
             params["key"] = self.api_key
 
         print(f"Fetching data from Google Books API for query: '{query}'...")

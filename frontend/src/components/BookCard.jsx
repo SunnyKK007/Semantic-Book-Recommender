@@ -1,54 +1,125 @@
 
 import { motion } from 'framer-motion';
 
-const BookCard = ({ book }) => {
-    // Determine dominant emotion for tag
+const EMOTION_CONFIG = [
+    { name: "Joyful",  key: "joy",     emoji: "🌟", bg: "rgba(234,179,8,0.15)",   border: "rgba(234,179,8,0.4)",   text: "#fde047" },
+    { name: "Suspense",key: "fear",    emoji: "😨", bg: "rgba(139,92,246,0.15)",  border: "rgba(139,92,246,0.4)",  text: "#c4b5fd" },
+    { name: "Sad",     key: "sadness", emoji: "💧", bg: "rgba(59,130,246,0.15)",  border: "rgba(59,130,246,0.4)",  text: "#93c5fd" },
+    { name: "Angry",   key: "anger",   emoji: "🔥", bg: "rgba(239,68,68,0.15)",   border: "rgba(239,68,68,0.4)",   text: "#fca5a5" },
+    { name: "Surprising", key: "surprise", emoji: "✨", bg: "rgba(6,182,212,0.15)", border: "rgba(6,182,212,0.4)", text: "#67e8f9" },
+    { name: "Disturbing", key: "disgust",  emoji: "🌑", bg: "rgba(107,114,128,0.15)",border: "rgba(107,114,128,0.4)",text: "#d1d5db" },
+];
+
+const NO_COVER_SVG = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='300' viewBox='0 0 200 300'><rect width='200' height='300' fill='%231e293b'/><rect x='30' y='40' width='140' height='180' rx='6' fill='%230f172a' stroke='%23334155' stroke-width='2'/><text x='100' y='145' font-family='sans-serif' font-size='13' fill='%2364748b' text-anchor='middle'>No Cover</text><text x='100' y='165' font-size='28' text-anchor='middle' fill='%2364748b'>📖</text></svg>`;
+
+const BookCard = ({ book, index = 0, onClick }) => {
     const getDominantEmotion = () => {
-        const emotions = [
-            { name: "Joyful", val: book.joy, color: "text-yellow-200" },
-            { name: "Suspense", val: book.fear, color: "text-purple-200" },
-            { name: "Sad", val: book.sadness, color: "text-blue-200" },
-            { name: "Angry", val: book.anger, color: "text-red-200" },
-        ];
-        // Filter significant emotions and sort
-        const significant = emotions.filter(e => e.val > 0.3).sort((a, b) => b.val - a.val);
-        return significant.length > 0 ? significant[0].name : null;
+        const candidates = EMOTION_CONFIG
+            .map(e => ({ ...e, val: book[e.key] || 0 }))
+            .filter(e => e.val > 0.3)
+            .sort((a, b) => b.val - a.val);
+        return candidates.length > 0 ? candidates[0] : null;
     };
 
-    const emotionTag = getDominantEmotion();
-    // Show only category as requested
+    const dominantEmotion = getDominantEmotion();
     const footerText = book.categories;
 
     return (
         <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="relative h-full group"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ delay: index * 0.06, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className="book-card-shell"
+            onClick={() => onClick && onClick(book)}
         >
             <div
-                className="glass-panel p-5 h-full flex flex-col hover:border-violet-500/50 transition-all duration-300 rounded-2xl relative overflow-hidden hover:-translate-y-2 hover:shadow-2xl hover:shadow-violet-500/20"
+                className="glass-panel book-card"
             >
                 {/* Shiny gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                <div className="book-card-shine" />
 
-                <div className="relative aspect-[2/3] mb-5 overflow-hidden rounded-lg bg-slate-800 shadow-2xl group-hover:shadow-violet-500/20 transition-shadow duration-500">
+                <div className="book-card-cover-wrap">
+                    {dominantEmotion && (
+                        <div
+                            className="book-emotion-badge"
+                            style={{
+                                background: dominantEmotion.bg,
+                                border: `1px solid ${dominantEmotion.border}`,
+                                color: dominantEmotion.text,
+                                backdropFilter: 'blur(8px)',
+                                fontSize: '11px',
+                            }}
+                        >
+                            <span>{dominantEmotion.emoji}</span>
+                            <span>{dominantEmotion.name}</span>
+                        </div>
+                    )}
+
+                    {/* Rating badge */}
+                    {book.average_rating && (
+                        <div
+                            className="book-rating-badge"
+                            style={{
+                                background: 'rgba(0,0,0,0.5)',
+                                border: '1px solid rgba(234,179,8,0.3)',
+                                backdropFilter: 'blur(8px)',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                color: '#fde047',
+                            }}
+                        >
+                            <span>⭐</span>
+                            <span>{book.average_rating}</span>
+                        </div>
+                    )}
+
+                    {/* Source badge */}
+                    {book.source && (
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: '8px',
+                                right: '8px',
+                                background: book.source === 'live' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(168, 162, 158, 0.15)',
+                                border: `1px solid ${book.source === 'live' ? 'rgba(34, 197, 94, 0.4)' : 'rgba(168, 162, 158, 0.4)'}`,
+                                color: book.source === 'live' ? '#86efac' : '#d6d3d1',
+                                backdropFilter: 'blur(8px)',
+                                fontSize: '10px',
+                                fontWeight: 600,
+                                padding: '3px 8px',
+                                borderRadius: '12px',
+                                zIndex: 10,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                            }}
+                        >
+                            {book.source === 'live' ? '⚡ Live' : '🗄️ Offline'}
+                        </div>
+                    )}
+
                     <img
-                        src={book.thumbnail || "/cover-not-found.jpg"}
+                        src={book.thumbnail || NO_COVER_SVG}
                         alt={book.title}
-                        className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700"
-                        onError={(e) => { e.target.src = "https://via.placeholder.com/200x300?text=No+Cover" }}
+                        className="book-cover-img"
+                        onError={(e) => { e.target.src = NO_COVER_SVG; }}
                     />
                 </div>
 
-                <h3 className="font-bold text-xl leading-tight mb-2 text-violet-300 tracking-tight group-hover:text-cyan-300 transition-colors duration-300 selection:bg-fuchsia-500/30">{book.title}</h3>
-                <p className="text-sm text-fuchsia-300 mb-3 font-medium uppercase tracking-wider selection:bg-fuchsia-500/30">{book.authors}</p>
-                <p className="text-sm text-slate-300 line-clamp-3 mb-6 flex-grow font-light leading-relaxed selection:bg-fuchsia-500/30">{book.description}</p>
+                <h3 className="book-card-title">{book.title}</h3>
+                <p className="book-card-author">{book.authors}</p>
+                <p className="book-card-description">{book.description}</p>
 
-                <div className="mt-auto pt-4 border-t border-white/5">
-                    <p className="text-xs font-bold uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-violet-300 to-fuchsia-300">
+                <div className="book-card-footer">
+                    <p className="book-card-category">
                         {footerText}
                     </p>
+                    <span className="book-card-view">
+                        View →
+                    </span>
                 </div>
             </div>
         </motion.div>

@@ -12,7 +12,7 @@ ENV SENTENCE_TRANSFORMERS_HOME=/app/.cache/sentence_transformers
 
 # Copy and install dependencies first (for Docker layer caching)
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
 
 # Pre-download AI models at build time so there's no cold-start delay
 RUN python -c "\

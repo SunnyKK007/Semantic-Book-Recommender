@@ -474,6 +474,32 @@ For Docker/Nginx deployment, you can omit `VITE_API_URL`; the frontend defaults 
 
 ---
 
+## 🚀 Future Roadmap & Potential Enhancements
+
+This project serves as a strong foundation for an AI-native recommendation engine, but there are exciting avenues for future growth:
+
+### 1. User Accounts & Personalised Libraries
+- **Feature**: Allow users to create accounts, save their favourite books, and track their reading history.
+- **Why**: Currently, the engine is stateless. By tracking user preferences, we can fine-tune the recommendation algorithm to favor books aligned with their past likes, essentially creating a personalised "taste profile".
+
+### 2. Large Language Model (LLM) Integration
+- **Feature**: Integrate an open-source LLM (like Llama 3) or OpenAI API to generate dynamic, conversational explanations of *why* a book matches a query.
+- **Why**: Instead of just showing the book and emotion scores, the app could say: *"Because you asked for a rainy Sunday vibe, the melancholic undertones in this book's second act perfectly match your mood."*
+
+### 3. Production Database Migration
+- **Feature**: Migrate from SQLite-backed ChromaDB and an in-memory Python dictionary cache to a managed PostgreSQL (with pgvector) and Redis cache.
+- **Why**: As the dataset scales beyond 100,000 books, a dedicated vector database and distributed cache will ensure high availability, faster semantic search, and the ability to horizontally scale the backend across multiple containers.
+
+### 4. Advanced Filter Criteria (Pacing & Tropes)
+- **Feature**: Add filters for "Pacing" (Fast-paced vs. Slow-burn) and specific literature tropes (e.g., "Enemies to Lovers", "Chosen One").
+- **Why**: Emotion is just one dimension. Combining semantic emotion analysis with pacing and structural tropes provides the ultimate discovery engine for modern fiction readers.
+
+### 5. Multi-Language Support
+- **Feature**: Swap the current English-only DistilRoBERTa model with a multi-lingual embedding and sentiment model (like `xlm-roberta`).
+- **Why**: To expand the engine's capability to search and recommend non-English literature globally.
+
+---
+
 ## 👤 Author
 
 **Sunny Kant Kumar**

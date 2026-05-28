@@ -138,7 +138,7 @@ When a live fetch succeeds, the results are saved to ChromaDB **in a background 
 
 If Google Books fails or returns no usable books, the API falls back entirely to ChromaDB:
 - It searches stored book descriptions semantically with `sentence-transformers/paraphrase-MiniLM-L3-v2`
-- **L2 Distance Threshold (1.8)** — only books with a similarity score ≤ 1.8 are included. This prevents unrelated books from previous searches (e.g., Superman comics) from leaking into a completely different query (e.g., "books about war"). The `paraphrase-MiniLM-L3-v2` model produces L2 distances in the 0.3–1.8 range, so anything above 1.8 is considered semantically irrelevant and is discarded
+- **Top-K Ranked Results** — ChromaDB returns the most semantically similar books first using L2 distance. Only the top-k closest matches are returned, ensuring relevance without hardcoded thresholds
 - It removes duplicate ISBNs
 - It applies the selected category with keyword matching
 - All results are tagged with `source: "offline"`

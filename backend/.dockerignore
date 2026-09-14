@@ -25,7 +25,6 @@ ENV/
 .gitignore
 
 # Vector database (will be volume-mounted)
-chroma_db/
 
 # Logs
 *.log

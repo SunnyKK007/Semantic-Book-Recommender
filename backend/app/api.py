@@ -25,7 +25,6 @@ def _clean_cache():
         _cache.clear()
 
 processor = DataProcessor(persist_directory="./chroma_db")
-processor = DataProcessor(persist_directory="./chroma_db")
 
 db_books = Chroma(
     embedding_function=processor.embedding_function, 

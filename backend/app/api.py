@@ -293,12 +293,14 @@ def recommend_books(
             seen_isbns.add(b_dict.get("isbn13"))
     else:
         truly_live_isbns = set()
-        chroma_books = _chromadb_fallback(query, category, 50)
-        for fb in chroma_books:
-            if fb.isbn13 not in seen_isbns:
-                final_books.append(fb)
-                seen_isbns.add(fb.isbn13)
-    
+
+    # Always enrich with semantically similar books from ChromaDB
+    chroma_books = _chromadb_fallback(query, category, 40)
+    for fb in chroma_books:
+        if fb.isbn13 not in seen_isbns:
+            final_books.append(fb)
+            seen_isbns.add(fb.isbn13)
+
     for fb in final_books:
         if fb.isbn13 in truly_live_isbns:
             fb.source = "live"
@@ -317,15 +319,16 @@ def recommend_books(
     
     def rank_score(b):
         score = 0
+        # live results always come before offline/ChromaDB results
+        if b.source == "offline":
+            score += 5000
         if primary_author and b.authors == primary_author:
             score -= 2000
-            
         title = b.title.lower()
         if q_lower == title:
             score -= 1000
         elif q_lower in title:
             score -= (100 - len(title))
-            
         return score
         
     final_books.sort(key=rank_score)

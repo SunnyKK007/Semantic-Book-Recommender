@@ -17,8 +17,6 @@ db_books = Chroma(
     embedding_function=processor.embedding_function, 
     persist_directory=processor.persist_directory
 )
-
-# Category map for Google Books query augmentation
 CAT_MAP = {
     "Fiction": "subject:fiction",
     "Nonfiction": "subject:nonfiction",
@@ -53,8 +51,6 @@ CAT_MAP = {
     "Religion": "subject:religion",
     "True Crime": "subject:true crime"
 }
-
-# Keyword map for ChromaDB category filtering
 KEYWORD_MAP = {
     "Fiction": ["fiction", "novel", "literature"],
     "Nonfiction": ["nonfiction", "fact", "history", "biography", "science"],
@@ -89,8 +85,6 @@ KEYWORD_MAP = {
     "Religion": ["religion", "spiritual", "faith", "theology"],
     "True Crime": ["crime", "murder", "forensic"]
 }
-
-# Tone → Emotion mapping
 TONE_MAP = {
     "Happy": "joy",
     "Sad": "sadness",
@@ -165,7 +159,6 @@ def _chromadb_fallback(query: str, category: Optional[str], limit: int) -> List[
     seen_isbns = set()
 
     try:
-        # Log ChromaDB collection size for debugging
         try:
             db_count = db_books._collection.count()
             print(f"chromadb_status: doc_count={db_count}")
@@ -181,8 +174,6 @@ def _chromadb_fallback(query: str, category: Optional[str], limit: int) -> List[
             
             if isbn in seen_isbns:
                 continue
-            
-            # Category filter for vector results
             if category and category != "All":
                 db_cats = str(metadata.get("categories", "")).lower()
                 target_keywords = KEYWORD_MAP.get(category, [category.lower()])
@@ -254,7 +245,7 @@ def recommend_books(
     except Exception as e:
         print(f"live_fetch_error:{e}")
 
-    TARGET_TOTAL = 30  # Aim for this many total results
+    TARGET_TOTAL = 30
     final_books = []
     seen_isbns = set()
 

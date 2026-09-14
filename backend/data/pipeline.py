@@ -3,7 +3,6 @@ from data.data_processor import DataProcessor
 
 def run_pipeline(query="subject:fiction"):
     fetcher = GoogleBooksFetcher()
-    # Ensure persist_directory is absolute or relative to run context
     processor = DataProcessor(persist_directory="./backend/chroma_db")
     
     print(f"--- Starting Pipeline for query: {query} ---")
@@ -20,5 +19,4 @@ def run_pipeline(query="subject:fiction"):
     print("--- Pipeline Complete ---")
 
 if __name__ == "__main__":
-    # Example usage: fetching mystery books
     run_pipeline(query="subject:mystery")

@@ -9,10 +9,8 @@ import Footer from './components/Footer';
 import BookModal from './components/BookModal';
 import './index.css';
 
-const DEFAULT_API_URL = import.meta.env.PROD ? "/api" : "http://localhost:8000";
+const DEFAULT_API_URL = import.meta.env.PROD ? "/api" : "http:
 const API_URL = (import.meta.env.VITE_API_URL || DEFAULT_API_URL).replace(/\/$/, "");
-
-// Tone → emotion field mapping (matches backend TONE_MAP)
 const TONE_EMOTION_MAP = {
   "Happy": "joy",
   "Sad": "sadness",
@@ -39,7 +37,7 @@ function App() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
   const [tone, setTone] = useState("All");
-  const [rawBooks, setRawBooks] = useState([]); // Unsorted results from API
+  const [rawBooks, setRawBooks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState(null);
@@ -68,7 +66,6 @@ function App() {
     try {
       const params = { query: searchQuery };
       if (category !== "All") params.category = category;
-      // Don't send tone to backend — we sort client-side now
 
       const res = await axios.get(`${API_URL}/recommend`, { 
         params,
@@ -109,7 +106,7 @@ function App() {
     return processedBooks.sort((a, b) => {
       const scoreA = a[emotionField] || 0;
       const scoreB = b[emotionField] || 0;
-      return scoreB - scoreA; // Descending: highest emotion first
+      return scoreB - scoreA;
     });
   }, [rawBooks, tone]);
 

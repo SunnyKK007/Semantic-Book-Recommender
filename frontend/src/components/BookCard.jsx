@@ -57,10 +57,6 @@ const BookCard = ({ book, onClick }) => {
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent pointer-events-none"></div>
         
-        {/* Affinity Pill */}
-        <div className={`absolute top-3 right-3 px-3 py-1 rounded-full bg-white/95 backdrop-blur-md shadow-sm border ${getBadgeBorder(c1)} flex items-center gap-1.5`}>
-          <span className={`font-label-sm text-xs font-bold ${getTextColor(c1)}`}>{resonanceScore}% Match</span>
-        </div>
         
         {/* Genre/Source Tag */}
         <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-white/90 backdrop-blur-sm text-slate-900 font-label-sm text-xs font-semibold shadow-sm border border-white/60">

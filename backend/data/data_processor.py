@@ -10,7 +10,7 @@ from langchain_core.documents import Document
 import os
 import time
 
-MAX_DB_SIZE = 15000  # Maximum number of books allowed in ChromaDB
+MAX_DB_SIZE = 15000
 
 class DataProcessor:
     def __init__(self, persist_directory: str = "./backend/chroma_db"):
@@ -21,11 +21,9 @@ class DataProcessor:
                                    top_k=None,
                                    device=self.device)
         self.emotion_labels = ["anger", "disgust", "fear", "joy", "neutral", "sadness", "surprise"]
-        
-        # Vector Store settings
         self.embedding_function = HuggingFaceEmbeddings(
             model_name="sentence-transformers/paraphrase-MiniLM-L3-v2",
-            model_kwargs={'device': 'cpu'} # Keep CPU for embeddings to avoid freezing on Mac
+            model_kwargs={'device': 'cpu'}
         )
         self.persist_directory = persist_directory
 
@@ -233,6 +231,5 @@ class DataProcessor:
             print(f"Background ChromaDB save error (non-fatal): {e}")
 
 if __name__ == "__main__":
-    # Test run
     processor = DataProcessor()
     print(f"test_run: db_size={processor.get_book_count()}")

@@ -9,7 +9,6 @@ services:
     ports:
       - "8000:7860"
     volumes:
-      # Persist the vector DB
       - ./backend/chroma_db:/app/chroma_db
     env_file:
       - .env

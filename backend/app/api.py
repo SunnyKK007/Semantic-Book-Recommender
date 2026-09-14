@@ -319,9 +319,6 @@ def recommend_books(
     
     def rank_score(b):
         score = 0
-        # live results always come before offline/ChromaDB results
-        if b.source == "offline":
-            score += 5000
         if primary_author and b.authors == primary_author:
             score -= 2000
         title = b.title.lower()

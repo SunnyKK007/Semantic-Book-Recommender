@@ -1,118 +1,60 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import SkeletonCard from './SkeletonCard';
+
+import React from 'react';
 import BookCard from './BookCard';
 
-const ResultsGrid = ({ loading, error, books, hasSearched, searchBooks, setQuery, setCategory, setTone, setSelectedBook }) => {
+const ResultsGrid = ({ loading, error, books, hasSearched, setSelectedBook, query }) => {
+  if (!hasSearched) return null;
+
   return (
-    <main style={{ paddingBottom: '100px' }}>
-      {/* Loading skeleton */}
-      {loading && (
-        <div>
-          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <p style={{ color: '#94a3b8', fontSize: '15px', fontWeight: 500 }}>
-              <span style={{ display: 'inline-block', animation: 'float 2s ease-in-out infinite' }}>🧠</span>
-              {' '}Analyzing emotions across book descriptions...
-            </p>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '24px' }}>
-            {[...Array(8)].map((_, i) => (
-              <SkeletonCard key={i} index={i} />
-            ))}
-          </div>
+    <div className="max-w-7xl mx-auto px-margin-mobile lg:px-margin mb-space-2xl mt-12">
+      {loading ? (
+        <div className="text-center py-20">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-slate-700 mb-4"></div>
+          <p className="font-body-md text-slate-500">Synthesizing vectors and retrieving resonance matches...</p>
         </div>
-      )}
-
-      {/* Error state */}
-      {!loading && error && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{ textAlign: 'center', padding: '60px 20px' }}
-        >
-          <div className="glass-panel" style={{ display: 'inline-block', padding: '40px 48px', borderRadius: '24px', maxWidth: '420px' }}>
-            <div style={{ fontSize: '40px', marginBottom: '16px' }}>⚠️</div>
-            <p style={{ color: '#f87171', fontSize: '17px', fontWeight: 700, marginBottom: '8px' }}>Something went wrong</p>
-            <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '24px', lineHeight: 1.6 }}>{error}</p>
-            <button
-              onClick={searchBooks}
-              style={{
-                padding: '12px 32px', borderRadius: '9999px', border: 'none',
-                background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', color: 'white',
-                fontSize: '14px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              🔄 Try Again
-            </button>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Results */}
-      {!loading && !error && books.length > 0 && (
+      ) : error ? (
+        <div className="text-center py-20 bg-rose-50 rounded-2xl border border-rose-200">
+          <span className="material-symbols-outlined text-rose-500 text-4xl mb-4">error</span>
+          <p className="font-headline-sm text-rose-700 font-semibold mb-2">Vector Retrieval Failed</p>
+          <p className="font-body-md text-rose-600/80">{error}</p>
+        </div>
+      ) : books.length === 0 ? (
+        <div className="text-center py-20 bg-slate-50 rounded-2xl border border-slate-200">
+          <span className="material-symbols-outlined text-slate-400 text-4xl mb-4">search_off</span>
+          <p className="font-headline-sm text-slate-700 font-semibold mb-2">No Resonance Found</p>
+          <p className="font-body-md text-slate-500">Adjust your semantic parameters or reduce the threshold.</p>
+        </div>
+      ) : (
         <>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{ marginBottom: '36px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-          >
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-space-md mb-space-lg">
             <div>
-              <h2 style={{ fontSize: '26px', fontWeight: 800, color: '#e2e8f0', marginBottom: '4px', letterSpacing: '-0.02em' }}>
-                Recommended for you
-              </h2>
-              <p style={{ color: '#64748b', fontSize: '14px', fontWeight: 500 }}>
-                Found <span style={{ color: '#a78bfa', fontWeight: 700 }}>{books.length}</span> books matching your vibe
-              </p>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-slate-600 animate-ping"></span>
+                <span className="font-label-sm text-label-sm tracking-widest uppercase text-slate-700 font-bold">Curated Matches</span>
+              </div>
+              <h2 className="mt-1 font-headline-lg text-3xl sm:text-4xl text-slate-900 font-serif font-medium">Curated For You</h2>
             </div>
-            <div style={{
-              padding: '6px 14px', borderRadius: '9999px',
-              background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)',
-              fontSize: '12px', fontWeight: 600, color: '#4ade80',
-            }}>
-              ● Live Results
+            <div className="flex items-center gap-space-sm text-slate-600 font-body-sm text-sm">
+              <span>Query Vector: <span className="text-slate-900 font-medium italic">"{query || 'General Topology'}"</span></span>
+              <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+              <div className="hidden md:flex items-center gap-3">
+                <span className="text-slate-700 font-semibold bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200">{books.length} Matches Found</span>
+              </div>
             </div>
-          </motion.div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '24px' }}>
-            <AnimatePresence mode='wait'>
-              {books.map((book, index) => (
-                <BookCard
-                  key={book.isbn13 + book.title}
-                  book={book}
-                  index={index}
-                  onClick={(b) => setSelectedBook(b)}
-                />
-              ))}
-            </AnimatePresence>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+            {books.map((book, idx) => (
+              <BookCard 
+                key={book.isbn13 || idx} 
+                book={book} 
+                onClick={() => setSelectedBook(book)} 
+              />
+            ))}
           </div>
         </>
       )}
-
-      {/* No results */}
-      {!loading && !error && books.length === 0 && hasSearched && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{ textAlign: 'center', padding: '60px 20px' }}
-        >
-          <div className="glass-panel" style={{ display: 'inline-block', padding: '40px 48px', borderRadius: '24px', maxWidth: '420px' }}>
-            <div style={{ fontSize: '40px', marginBottom: '16px' }}>📭</div>
-            <p style={{ color: '#e2e8f0', fontSize: '17px', fontWeight: 700, marginBottom: '8px' }}>No matches found</p>
-            <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '20px' }}>Try a different query or adjust your filters.</p>
-            <button
-              onClick={() => { setQuery(''); setCategory('All'); setTone('All'); }}
-              style={{
-                padding: '10px 24px', borderRadius: '9999px', border: '1px solid rgba(139,92,246,0.3)',
-                background: 'transparent', color: '#a78bfa', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
-              }}
-            >
-              Clear Filters
-            </button>
-          </div>
-        </motion.div>
-      )}
-    </main>
+    </div>
   );
 };
 

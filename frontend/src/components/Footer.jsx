@@ -1,25 +1,24 @@
-import { BookOpen, Brain } from 'lucide-react';
+import React from 'react';
 
 const Footer = () => {
   return (
-    <footer style={{
-      borderTop: '1px solid rgba(255,255,255,0.04)', padding: '32px 0',
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <BookOpen size={16} color="#475569" />
-        <span style={{ fontSize: '13px', color: '#475569', fontWeight: 500 }}>
-          Semantic Book Recommender
-        </span>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-        <span style={{ fontSize: '12px', color: '#334155' }}>
-          Built with <span style={{ color: '#a78bfa' }}>AI</span> by Sunny Kant Kumar
-        </span>
-        <span style={{ fontSize: '11px', color: '#1e293b' }}>•</span>
-        <span style={{ fontSize: '11px', color: '#334155', display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <Brain size={12} /> DistilRoBERTa + ChromaDB
-        </span>
+    <footer className="w-full bg-white border-t border-slate-200/80 py-space-2xl mt-space-2xl">
+      <div className="max-w-7xl mx-auto px-margin-mobile lg:px-margin flex flex-col md:flex-row items-center justify-between gap-space-lg">
+        <div className="flex flex-col items-center md:items-start gap-space-xs">
+          <div className="flex items-center gap-space-sm">
+            <span className="font-label-lg text-label-lg text-slate-900 font-semibold">Built by Sunny Kant Kumar</span>
+          </div>
+          <p className="font-body-sm text-sm text-slate-500">
+            Finding your next favorite book by matching your exact mood and emotional vibe.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-space-lg">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
+            <span className="font-label-sm text-xs text-slate-600 font-medium">Python • FastAPI • ChromaDB • Transformers</span>
+          </div>
+          <a className="font-label-sm text-xs font-semibold text-slate-700 hover:text-slate-900 transition-colors" href="http://localhost:8000/docs" target="_blank" rel="noreferrer">API Documentation</a>
+        </div>
       </div>
     </footer>
   );

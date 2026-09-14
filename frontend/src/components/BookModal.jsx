@@ -3,16 +3,16 @@ import { X, Star, Calendar, BookOpen, Layers } from 'lucide-react';
 import { useEffect } from 'react';
 
 const EMOTION_COLORS = {
-    joy:      { label: 'Joy',      color: '#fde047', bg: 'rgba(253,224,71,0.15)' },
-    sadness:  { label: 'Sadness',  color: '#93c5fd', bg: 'rgba(147,197,253,0.15)' },
-    anger:    { label: 'Anger',    color: '#fca5a5', bg: 'rgba(252,165,165,0.15)' },
-    fear:     { label: 'Fear',     color: '#c4b5fd', bg: 'rgba(196,181,253,0.15)' },
-    surprise: { label: 'Surprise', color: '#67e8f9', bg: 'rgba(103,232,249,0.15)' },
-    disgust:  { label: 'Disgust',  color: '#d1d5db', bg: 'rgba(209,213,219,0.15)' },
-    neutral:  { label: 'Neutral',  color: '#a3a3a3', bg: 'rgba(163,163,163,0.1)' },
+    joy:      { label: 'Joy',      color: '#eab308', bg: 'rgba(234,179,8,0.1)' },
+    sadness:  { label: 'Sadness',  color: '#3b82f6', bg: 'rgba(59,130,246,0.1)' },
+    anger:    { label: 'Anger',    color: '#ef4444', bg: 'rgba(239,68,68,0.1)' },
+    fear:     { label: 'Fear',     color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)' },
+    surprise: { label: 'Surprise', color: '#06b6d4', bg: 'rgba(6,182,212,0.1)' },
+    disgust:  { label: 'Disgust',  color: '#64748b', bg: 'rgba(100,116,139,0.1)' },
+    neutral:  { label: 'Neutral',  color: '#94a3b8', bg: 'rgba(148,163,184,0.1)' },
 };
 
-const NO_COVER_SVG = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='300' viewBox='0 0 200 300'><rect width='200' height='300' fill='%231e293b'/><rect x='30' y='40' width='140' height='180' rx='6' fill='%230f172a' stroke='%23334155' stroke-width='2'/><text x='100' y='145' font-family='sans-serif' font-size='13' fill='%2364748b' text-anchor='middle'>No Cover</text><text x='100' y='165' font-size='28' text-anchor='middle' fill='%2364748b'>📖</text></svg>`;
+const NO_COVER_SVG = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='300' viewBox='0 0 200 300'><rect width='200' height='300' fill='%23f1f5f9'/><rect x='30' y='40' width='140' height='180' rx='6' fill='%23e2e8f0' stroke='%23cbd5e1' stroke-width='2'/><text x='100' y='145' font-family='sans-serif' font-size='13' fill='%2394a3b8' text-anchor='middle'>No Cover</text></svg>`;
 
 const BookModal = ({ book, onClose }) => {
     useEffect(() => {
@@ -31,7 +31,6 @@ const BookModal = ({ book, onClose }) => {
             key,
             value: book[key] || 0,
         }))
-        .filter(e => e.key !== 'neutral')
         .sort((a, b) => b.value - a.value);
 
     return (
@@ -58,7 +57,7 @@ const BookModal = ({ book, onClose }) => {
                     <div style={{ position: 'relative' }}>
                         <div style={{
                             position: 'absolute', inset: 0, height: '200px',
-                            background: `linear-gradient(180deg, rgba(139,92,246,0.12) 0%, transparent 100%)`,
+                            background: `linear-gradient(180deg, rgba(15,23,42,0.06) 0%, transparent 100%)`,
                             borderRadius: '24px 24px 0 0',
                         }} />
 
@@ -68,14 +67,14 @@ const BookModal = ({ book, onClose }) => {
                             aria-label="Close modal"
                             style={{
                                 position: 'absolute', top: '16px', right: '16px', zIndex: 10,
-                                background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)',
+                                background: 'rgba(255,255,255,0.8)', border: '1px solid rgba(0,0,0,0.05)',
                                 borderRadius: '50%', width: '36px', height: '36px',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                cursor: 'pointer', color: '#94a3b8',
-                                transition: 'all 0.2s',
+                                cursor: 'pointer', color: '#64748b',
+                                transition: 'all 0.2s', backdropFilter: 'blur(4px)'
                             }}
-                            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.3)'; e.currentTarget.style.color = '#fff'; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,0.4)'; e.currentTarget.style.color = '#94a3b8'; }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.color = '#ef4444'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.8)'; e.currentTarget.style.color = '#64748b'; }}
                         >
                             <X size={16} />
                         </button>
@@ -89,17 +88,16 @@ const BookModal = ({ book, onClose }) => {
                                 style={{
                                     width: '140px', height: '210px', objectFit: 'cover',
                                     borderRadius: '12px', flexShrink: 0,
-                                    boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+                                    boxShadow: '0 12px 30px rgba(0,0,0,0.1)',
                                 }}
                             />
                             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                 <h2 style={{
                                     fontSize: '24px', fontWeight: 800, margin: '0 0 8px 0',
-                                    background: 'linear-gradient(to right, #c4b5fd, #e0d4ff)',
-                                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                                    color: '#0f172a',
                                     lineHeight: 1.3,
                                 }}>{book.title}</h2>
-                                <p style={{ color: '#d946ef', fontSize: '14px', fontWeight: 600, margin: '0 0 12px 0', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                                <p style={{ color: '#4f46e5', fontSize: '14px', fontWeight: 600, margin: '0 0 12px 0', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                                     {book.authors}
                                 </p>
 
@@ -109,7 +107,7 @@ const BookModal = ({ book, onClose }) => {
                                         <span style={{
                                             display: 'inline-flex', alignItems: 'center', gap: '4px',
                                             padding: '4px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: 600,
-                                            background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)', color: '#c4b5fd',
+                                            background: 'rgba(15,23,42,0.1)', border: '1px solid rgba(15,23,42,0.2)', color: '#4f46e5',
                                         }}>
                                             <Layers size={12} /> {book.categories}
                                         </span>
@@ -118,7 +116,7 @@ const BookModal = ({ book, onClose }) => {
                                         <span style={{
                                             display: 'inline-flex', alignItems: 'center', gap: '4px',
                                             padding: '4px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: 600,
-                                            background: 'rgba(6,182,212,0.12)', border: '1px solid rgba(6,182,212,0.3)', color: '#67e8f9',
+                                            background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.2)', color: '#0891b2',
                                         }}>
                                             <Calendar size={12} /> {book.published_year}
                                         </span>
@@ -127,7 +125,7 @@ const BookModal = ({ book, onClose }) => {
                                         <span style={{
                                             display: 'inline-flex', alignItems: 'center', gap: '4px',
                                             padding: '4px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: 600,
-                                            background: 'rgba(234,179,8,0.12)', border: '1px solid rgba(234,179,8,0.3)', color: '#fde047',
+                                            background: 'rgba(234,179,8,0.1)', border: '1px solid rgba(234,179,8,0.2)', color: '#ca8a04',
                                         }}>
                                             <Star size={12} /> {book.average_rating}
                                         </span>
@@ -143,7 +141,7 @@ const BookModal = ({ book, onClose }) => {
                             <BookOpen size={14} style={{ display: 'inline', marginRight: '6px', verticalAlign: '-2px' }} />
                             Description
                         </h3>
-                        <p style={{ color: '#cbd5e1', fontSize: '15px', lineHeight: 1.75, margin: 0 }}>
+                        <p style={{ color: '#475569', fontSize: '15px', lineHeight: 1.75, margin: 0 }}>
                             {book.description || 'No description available.'}
                         </p>
                     </div>
@@ -151,7 +149,7 @@ const BookModal = ({ book, onClose }) => {
                     {/* Emotion Analysis */}
                     <div style={{ padding: '0 32px 32px' }}>
                         <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '16px' }}>
-                            🎭 Emotion Analysis
+                            Mood Analysis
                         </h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                             {emotions.map((emotion) => (
@@ -164,7 +162,7 @@ const BookModal = ({ book, onClose }) => {
                                             className="emotion-bar-fill"
                                             style={{
                                                 width: `${Math.round(emotion.value * 100)}%`,
-                                                background: `linear-gradient(90deg, ${emotion.color}88, ${emotion.color})`,
+                                                background: `linear-gradient(90deg, ${emotion.bg}, ${emotion.color})`,
                                             }}
                                         />
                                     </div>

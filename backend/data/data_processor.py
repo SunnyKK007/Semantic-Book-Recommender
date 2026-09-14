@@ -15,7 +15,7 @@ MAX_DB_SIZE = 15000  # Maximum number of books allowed in ChromaDB
 class DataProcessor:
     def __init__(self, persist_directory: str = "./backend/chroma_db"):
         self.device = self._get_device()
-        print(f"Initializing emotion classifier on {self.device}...")
+        print(f"init_classifier: device={self.device}")
         self.classifier = pipeline("text-classification",
                                    model="j-hartmann/emotion-english-distilroberta-base",
                                    top_k=None,
@@ -56,11 +56,10 @@ class DataProcessor:
         Runs emotion analysis on a list of book dictionaries.
         Returns the list with appended emotion scores.
         """
-        print("Processing emotions...")
+        print("process_emotions: start")
         processed_books = []
         for book in tqdm(books):
             desc = book.get("description", "")
-            # Simple sentence splitting
             sentences = [s for s in str(desc).split(".") if s.strip()]
             
             if not sentences:
@@ -96,7 +95,6 @@ class DataProcessor:
         """
         try:
             db = self._get_chroma_db()
-            # Query metadata for matching ISBNs
             results = db.get(where={"isbn13": {"$in": isbn_list}})
             existing = set()
             if results and results.get("metadatas"):
@@ -121,20 +119,17 @@ class DataProcessor:
             if not all_data or not all_data.get("ids"):
                 return
             
-            # Pair IDs with their stored_at timestamps
             id_timestamps = []
             for i, doc_id in enumerate(all_data["ids"]):
-                stored_at = all_data["metadatas"][i].get("stored_at", 0)  # 0 = oldest (legacy)
+                stored_at = all_data["metadatas"][i].get("stored_at", 0)
                 id_timestamps.append((doc_id, stored_at))
             
-            # Sort by timestamp (oldest first)
             id_timestamps.sort(key=lambda x: x[1])
             
-            # Delete the oldest ones
             ids_to_delete = [item[0] for item in id_timestamps[:count]]
             if ids_to_delete:
                 db._collection.delete(ids=ids_to_delete)
-                print(f"Evicted {len(ids_to_delete)} oldest books from ChromaDB.")
+                print(f"evict_complete: count={len(ids_to_delete)}")
         except Exception as e:
             print(f"Error deleting oldest books: {e}")
 
@@ -142,14 +137,11 @@ class DataProcessor:
         """
         Updates (or creates) the ChromaDB vector store with the provided books.
         """
-        print(f"Updating vector store at {self.persist_directory}...")
+        print(f"update_vector_store: dir={self.persist_directory}")
         documents = []
         for book in books:
-            # We construct the content to be embedded. 
-            # Combining ISBN and Description helps in unique identification and semantic search.
-            page_content = f"{book['isbn13']} {book['description']}"
+            page_content = f"Title: {book['title']}. Author: {book.get('authors', 'Unknown')}. Description: {book['description']}"
             
-            # Metadata for filtering/retrieval
             metadata = {
                 "isbn13": str(book["isbn13"]),
                 "title": book["title"],
@@ -170,9 +162,9 @@ class DataProcessor:
         if documents:
             db = Chroma(embedding_function=self.embedding_function, persist_directory=self.persist_directory)
             db.add_documents(documents)
-            print(f"Added {len(documents)} documents to ChromaDB.")
+            print(f"chromadb_add: count={len(documents)}")
         else:
-            print("No documents to add.")
+            print("chromadb_add: skip_empty")
 
     def update_vector_store_safe(self, books: List[Dict[str, Any]]):
         """
@@ -187,22 +179,18 @@ class DataProcessor:
             if not books:
                 return
 
-            # 1. Quality filter
             quality_books = []
             for book in books:
                 desc = book.get("description", "")
                 title = book.get("title", "")
                 authors = book.get("authors", "")
                 
-                # Skip books with short descriptions
                 if len(str(desc).split()) < 30:
                     continue
-                # Skip books without valid title/author
                 if not title or title == "Unknown Title":
                     continue
                 if not authors or authors == "Unknown Author":
                     continue
-                # Skip books where no emotion scored above 0.2
                 max_emotion = max(
                     book.get("joy", 0), book.get("sadness", 0), book.get("anger", 0),
                     book.get("fear", 0), book.get("surprise", 0), book.get("disgust", 0),
@@ -213,36 +201,33 @@ class DataProcessor:
                 quality_books.append(book)
             
             if not quality_books:
-                print("No quality books to save after filtering.")
+                print("save_skip: no_quality_books")
                 return
 
-            # 2. ISBN deduplication
             incoming_isbns = [str(b.get("isbn13", "")) for b in quality_books if b.get("isbn13")]
             existing_isbns = self.get_existing_isbns(incoming_isbns) if incoming_isbns else set()
             
             new_books = [b for b in quality_books if str(b.get("isbn13", "")) not in existing_isbns]
             
             if not new_books:
-                print(f"All {len(quality_books)} books already exist in ChromaDB. Skipping.")
+                print(f"save_skip: all_duplicate count={len(quality_books)}")
                 return
             
-            print(f"Filtered: {len(books)} total → {len(quality_books)} quality → {len(new_books)} new")
+            print(f"save_filter: total={len(books)} quality={len(quality_books)} new={len(new_books)}")
 
-            # 3. DB size cap with LRU eviction
             current_count = self.get_book_count()
             space_needed = (current_count + len(new_books)) - MAX_DB_SIZE
             
             if space_needed > 0:
-                print(f"DB at {current_count}/{MAX_DB_SIZE}. Evicting {space_needed} oldest entries...")
+                print(f"save_evict: db_size={current_count}/{MAX_DB_SIZE} evicting={space_needed}")
                 self.delete_oldest_books(space_needed)
 
-            # 4. Add stored_at timestamp and save
             now = time.time()
             for book in new_books:
                 book["stored_at"] = now
             
             self.update_vector_store(new_books)
-            print(f"Background save complete: {len(new_books)} new books added to ChromaDB.")
+            print(f"save_complete: count={len(new_books)}")
             
         except Exception as e:
             print(f"Background ChromaDB save error (non-fatal): {e}")
@@ -250,4 +235,4 @@ class DataProcessor:
 if __name__ == "__main__":
     # Test run
     processor = DataProcessor()
-    print(f"Current DB size: {processor.get_book_count()} books")
+    print(f"test_run: db_size={processor.get_book_count()}")

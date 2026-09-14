@@ -11,7 +11,6 @@ class Book(BaseModel):
     average_rating: Optional[float] = None
     published_year: Optional[int] = None
     num_pages: Optional[int] = None
-    # Emotion scores
     joy: Optional[float] = 0.0
     sadness: Optional[float] = 0.0
     anger: Optional[float] = 0.0

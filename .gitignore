@@ -15,10 +15,6 @@ build/
 .env.test.local
 .env.production.local
 
-# Database
-chroma_db/
-backend/chroma_db/
-
 # IDEs
 .idea/
 .vscode/

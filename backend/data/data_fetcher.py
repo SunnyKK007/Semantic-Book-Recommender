@@ -27,7 +27,7 @@ class GoogleBooksFetcher:
         if self.api_key and self.api_key != "YOUR_API_KEY_HERE":
             params["key"] = self.api_key
 
-        print(f"Fetching data from Google Books API for query: '{query}'...")
+        print(f"fetch_start: query='{query}'")
         response = requests.get(self.BASE_URL, params=params)
         
         if response.status_code != 200:
@@ -41,12 +41,10 @@ class GoogleBooksFetcher:
             industry_identifiers = volume_info.get("industryIdentifiers", [])
             isbn13 = next((id['identifier'] for id in industry_identifiers if id['type'] == 'ISBN_13'), None)
 
-            # Skip books without ISBN or title
             if not isbn13 or not volume_info.get("title"):
                 continue
 
             description = volume_info.get("description", "")
-            # Filter minimal quality: needs a description of reasonable length
             if len(description.split()) < 20:
                 continue
 
@@ -63,12 +61,12 @@ class GoogleBooksFetcher:
             }
             books.append(book)
         
-        print(f"Successfully processed {len(books)} books.")
+        print(f"fetch_complete: count={len(books)}")
         return books
 
 if __name__ == "__main__":
     fetcher = GoogleBooksFetcher()
-    # Test fetch
+    
     books = fetcher.fetch_books(query="subject:mystery", max_results=10)
     for b in books:
         print(f"- {b['title']} ({b['published_year']})")

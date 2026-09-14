@@ -1,0 +1,108 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "tertiary": "#0284c7",
+        "on-tertiary": "#ffffff",
+        "inverse-surface": "#1e293b",
+        "on-secondary-fixed-variant": "#3730a3",
+        "on-primary-container": "#312e81",
+        "on-primary-fixed-variant": "#3730a3",
+        "on-primary": "#ffffff",
+        "primary-fixed-dim": "#c7d2fe",
+        "tertiary-fixed-dim": "#bae6fd",
+        "surface-bright": "#ffffff",
+        "on-surface-variant": "#64748b",
+        "surface-container-highest": "#e2e8f0",
+        "secondary-fixed": "#e0e7ff",
+        "error": "#dc2626",
+        "tertiary-container": "#e0f2fe",
+        "error-container": "#fee2e2",
+        "on-primary-fixed": "#1e1b4b",
+        "inverse-primary": "#a5b4fc",
+        "outline-variant": "#cbd5e1",
+        "on-secondary-fixed": "#1e1b4b",
+        "on-tertiary-fixed": "#082f49",
+        "surface-tint": "#4f46e5",
+        "on-error-container": "#7f1d1d",
+        "surface-container-low": "#f8fafc",
+        "background": "#faf8ff",
+        "surface-variant": "#f1f5f9",
+        "surface-container-high": "#edf2f7",
+        "primary-container": "#e0e7ff",
+        "on-secondary-container": "#1e1b4b",
+        "primary": "#4338ca",
+        "surface": "#faf8ff",
+        "surface-dim": "#f1f5f9",
+        "on-error": "#ffffff",
+        "on-surface": "#0f172a",
+        "secondary": "#4f46e5",
+        "on-secondary": "#ffffff",
+        "outline": "#94a3b8",
+        "secondary-fixed-dim": "#c7d2fe",
+        "primary-fixed": "#e0e7ff",
+        "secondary-container": "#eef2ff",
+        "inverse-on-surface": "#f8fafc",
+        "surface-container": "#ffffff",
+        "surface-container-lowest": "#ffffff",
+        "on-tertiary-container": "#0369a1",
+        "on-background": "#0f172a",
+        "tertiary-fixed": "#e0f2fe"
+      },
+      borderRadius: {
+        "DEFAULT": "0.25rem",
+        "lg": "0.5rem",
+        "xl": "0.75rem",
+        "2xl": "1rem",
+        "full": "9999px"
+      },
+      spacing: {
+        "margin": "2.5rem",
+        "gutter-mobile": "0.75rem",
+        "margin-mobile": "1rem",
+        "space-xs": "0.25rem",
+        "space-md": "1rem",
+        "space-lg": "1.5rem",
+        "space-2xl": "4rem",
+        "space-xl": "2.5rem",
+        "space-sm": "0.5rem",
+        "gutter": "1.5rem"
+      },
+      fontFamily: {
+        "display": ["Newsreader", "serif"],
+        "headline-lg": ["Newsreader", "serif"],
+        "headline-md": ["Newsreader", "serif"],
+        "headline-sm": ["Newsreader", "serif"],
+        "body-lg": ["Newsreader", "serif"],
+        "body-md": ["Hanken Grotesk", "sans-serif"],
+        "body-sm": ["Hanken Grotesk", "sans-serif"],
+        "label-lg": ["Hanken Grotesk", "sans-serif"],
+        "label-sm": ["Hanken Grotesk", "sans-serif"]
+      },
+      fontSize: {
+        "display": ["3.5rem", { lineHeight: "4.25rem", letterSpacing: "-0.02em", fontWeight: "400" }],
+        "display-mobile": ["2.25rem", { lineHeight: "2.75rem", letterSpacing: "-0.015em", fontWeight: "400" }],
+        "headline-lg": ["2.25rem", { lineHeight: "2.875rem", letterSpacing: "-0.015em", fontWeight: "400" }],
+        "headline-lg-mobile": ["1.75rem", { lineHeight: "2.25rem", letterSpacing: "-0.01em", fontWeight: "400" }],
+        "headline-md": ["1.75rem", { lineHeight: "2.25rem", letterSpacing: "-0.01em", fontWeight: "500" }],
+        "headline-sm": ["1.375rem", { lineHeight: "1.875rem", fontWeight: "500" }],
+        "body-lg": ["1.25rem", { lineHeight: "2rem", fontWeight: "400" }],
+        "body-md": ["1.0625rem", { lineHeight: "1.75rem", fontWeight: "400" }],
+        "body-sm": ["0.875rem", { lineHeight: "1.375rem", fontWeight: "400" }],
+        "label-lg": ["0.875rem", { lineHeight: "1.25rem", letterSpacing: "0.02em", fontWeight: "600" }],
+        "label-md": ["0.75rem", { lineHeight: "1rem", letterSpacing: "0.04em", fontWeight: "500" }],
+        "label-sm": ["0.6875rem", { lineHeight: "0.875rem", letterSpacing: "0.06em", fontWeight: "600" }]
+      }
+    }
+  },
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/container-queries')
+  ],
+}

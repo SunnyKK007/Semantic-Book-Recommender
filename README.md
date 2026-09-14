@@ -1,513 +1,133 @@
-# 📚 Semantic Book Recommender
+# BookSense: Semantic Book Recommendation Engine
 
-> **"Don't search for keywords. Search for a vibe."**
+## Overview
+Traditional book recommendation systems rely heavily on rigid metadata: titles, authors, and strict genre categorizations. However, readers often search for books based on abstract concepts, specific atmospheric moods, or emotional trajectories (e.g., "A dystopian sci-fi with a melancholic, rainy atmosphere and deep existential dread"). 
 
-An AI-powered book recommendation engine that understands **emotions**, **tone**, and **semantic meaning** — not just matching words. Built with a FastAPI backend, a ChromaDB vector database, live Google Books integration, and a beautiful React + Framer Motion frontend.
+**BookSense** was built to bridge this gap. It is a full-stack, AI-powered semantic search engine that leverages Natural Language Processing (NLP) to retrieve literature based on the *emotional* and *atmospheric* context of a user's query rather than simple keyword matching.
 
----
-## 🌐 Live Demo
+## Live Demo
+[Try it Live → https://booksense-demo.vercel.app](https://booksense-demo.vercel.app/)
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?style=for-the-badge&logo=vercel)](https://semantic-book-recommender-five.vercel.app/)
-[![Backend](https://img.shields.io/badge/Backend-Hugging%20Face-yellow?style=for-the-badge&logo=huggingface)](https://sunny9523-semantic-book-recomender.hf.space)
-[![Frontend](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-blue?style=for-the-badge&logo=react)](https://semantic-book-recommender-five.vercel.app/)
+## Key Features
+- **Vibe-Based Search:** Search for books using natural language ("a cozy rainy mystery").
+- **7-Vector Emotion Profiling:** Books are analyzed across 7 specific emotional axes.
+- **Dynamic Corpus Expansion:** Live synchronization with the Google Books API.
+- **Sub-Second Vector Search:** Instantaneous semantic matching via local ChromaDB.
+- **Minimalist Aesthetic:** High-contrast, monochrome UI with glassmorphic elements.
 
+## Core Methodology & Architecture
 
+```mermaid
+graph TD
+    %% User Interaction
+    U[User] -->|Natural Language Query| F(React Frontend)
+    F -->|REST /search| B(FastAPI Backend)
 
-> 🚀 **[Try it Live → https://auto-agentic-rag.vercel.app](https://semantic-book-recommender-five.vercel.app/)**
+    %% Backend Processing
+    subgraph AI Engine [NLP Pipeline & Vector Space]
+        B -->|Fetch Live Data| G[Google Books API]
+        G -->|Raw Synopses| DP[Data Processor]
+        
+        DP -->|Text| M1[MiniLM-L3-v2 Model]
+        M1 -->|384D Vector| V[(ChromaDB)]
+        
+        DP -->|Text| M2[DistilRoBERTa Emotion Model]
+        M2 -->|7-Emotion Profile| V
+    end
 
-
----
-
-## 🌟 Why I Built This
-
-As a reader, I was frustrated by how shallow most book discovery tools are.
-
-Standard search engines are flawed. If you search for *"a sad story about war"*, they simply look for the text `"sad"` and `"war"` in the title or metadata. But that's not how readers think.
-
-Readers search for **vibes**:
-- *"A book that feels like a rainy Sunday"*
-- *"A cyberpunk detective story with a gloomy atmosphere"*
-- *"Something hopeful after a tough year"*
-
-No search engine understood that — until now.
-
-**This project bridges the gap between human emotional intent and book metadata.** It uses real AI — not filters, not tags — to understand what you *feel* like reading.
-
----
-
-## 🧩 The Problem I Solved
-
-| Old Way | This Project |
-|---------|-------------|
-| Match keywords in title/author | Understand the **meaning** behind a query |
-| Filter by genre tags | Filter and rank by **emotional tone** (7 emotions) |
-| Static database lookup | **Hybrid fetch** — Live API + Local AI database |
-| Alphabetical or popularity sort | Sort by **emotional resonance** to your query |
-| Cold, robotic results | Results that feel **personal and mood-aware** |
-| Limited result count | **30 books per search** via hybrid filling |
-
----
-
-## 🧠 How It Works — The Full Pipeline
-
-```
-User Types a Query → Clicks Search or Presses Enter
-       │
-       ▼
- ┌─────────────────────────────────────┐
- │  STEP 1: Cache Check                │
- │  Identical query + category within  │
- │  10 minutes returns instantly       │
- └──────────────┬──────────────────────┘
-                │ (cache miss)
-                ▼
- ┌─────────────────────────────────────┐
- │     STEP 2: Query Augmentation      │
- │  Category filter → appended as      │
- │  Google subject: prefix             │
- └──────────────┬──────────────────────┘
-                │
-                ▼
- ┌─────────────────────────────────────┐
- │  STEP 3: Live Fetch (Google Books)  │
- │  Fetches up to 30 fresh books       │
- │  Filters: English only, has ISBN13, │
- │  description ≥ 20 words             │
- └──────────────┬──────────────────────┘
-                │
-         ┌──────┴──────┐
-    SUCCESS          FAILURE
-         │               │
-         ▼               ▼
- ┌───────────────┐ ┌────────────────────┐
- │  Emotion      │ │  ChromaDB Offline  │
- │  Analysis     │ │  Full Fallback     │
- │  (distil-     │ │  30 books from     │
- │  roberta)     │ │  semantic search   │
- └───────┬───────┘ └─────────┬──────────┘
-         │                   │
-         ▼                   │
- ┌───────────────┐           │
- │  STEP 4:      │           │
- │  Hybrid Fill  │           │
- │  Fill to 30   │           │
- │  from ChromaDB│           │
- │  (deduped)    │           │
- └───────┬───────┘           │
-         │                   │
-         ▼                   │
- ┌───────────────┐           │
- │  Background   │           │
- │  ChromaDB     │           │
- │  Save (async) │           │
- └───────┬───────┘           │
-         │                   │
-         └──────┬────────────┘
-                ▼
- ┌─────────────────────────────────────┐
- │  STEP 5: Client-Side Tone Sorting   │
- │  Frontend instantly sorts by the    │
- │  emotion matching the user's        │
- │  selected tone using useMemo        │
- └──────────────┬──────────────────────┘
-                │
-                ▼
-       📖 30 Ranked Book Results
-          (⚡ Live + 🗄️ Offline)
+    %% Retrieval & Response
+    B -->|Cosine Similarity Search| V
+    V -->|Top Matches| B
+    B -->|JSON Response| F
+    F -->|Displays Bento Cards| U
+    
+    classDef primary fill:#f8fafc,stroke:#334155,stroke-width:2px,color:#0f172a;
+    classDef secondary fill:#f1f5f9,stroke:#64748b,stroke-width:1px,color:#334155;
+    classDef database fill:#e2e8f0,stroke:#475569,stroke-width:2px,color:#0f172a;
+    
+    class U,F primary;
+    class B,DP,M1,M2 secondary;
+    class V,G database;
 ```
 
-### 🔄 Hybrid Results (Live + Offline Fill)
+The system is built on a modern, decoupled architecture featuring a Python/FastAPI backend for heavy NLP inference and a React/Tailwind frontend for a sleek, minimalistic user experience.
 
-Every search aims to return **30 books**:
-1. **Live books come first** — freshly fetched from Google Books API with real-time emotion analysis, tagged with `source: "live"`
-2. **ChromaDB fills the rest** — semantically similar books from the local vector store fill remaining slots, tagged with `source: "offline"`
-3. **ISBN deduplication** ensures no book appears twice
-4. Users see clear **⚡ Live** and **🗄️ Offline** badges on each card
+### 1. The NLP Pipeline (Backend)
+- **Vector Embeddings (384-Dim):** User queries and book descriptions are passed through the `sentence-transformers/paraphrase-MiniLM-L3-v2` transformer model. This maps natural language into a dense 384-dimensional latent space where cosine similarity can be used to find contextually related texts.
+- **7-Vector Affective Deconstruction:** To further refine matches, the system utilizes the `j-hartmann/emotion-english-distilroberta-base` model to analyze book synopses across a 7-emotion spectrum: *Joy, Sadness, Anger, Fear, Surprise, Disgust, and Neutral*. 
+- **Dynamic Corpus Expansion:** The backend integrates directly with the Google Books API. When a query is run, the engine fetches live literature data, processes the NLP embeddings on the fly, and caches the results.
+- **Vector Database:** Processed books and their embeddings are persistently stored in a local **ChromaDB** instance for sub-second retrieval latency on subsequent searches.
 
-### 🎛️ Client-Side Tone Sorting
+### 2. The User Interface (Frontend)
+- **Minimalist Aesthetic:** The frontend is built with React and Tailwind CSS, adhering to a strict, high-contrast monochrome (slate/black/white) design system. It intentionally avoids cliché UI elements (like "AI sparkles" or bright gradients) in favor of a premium, editorial look.
+- **Interactive Modals:** Powered by Framer Motion, book details open in responsive, glassmorphic modals that visualize the 7-emotion spectrum of the selected book.
 
-Tone sorting (Happy, Sad, Romantic, etc.) is handled entirely on the frontend using React's `useMemo`:
-- Switching tones is **instant** — no network request, no loading spinner
-- The same books are re-ordered by the matching emotion score (e.g., "Romantic" sorts by `joy` descending)
-- Only changing the **Category** triggers a new API fetch
+## Project Structure
 
-### 🔄 Cache-on-Demand (Background ChromaDB Update)
+### `/backend`
+- `app/main.py` & `app/api.py`: The FastAPI application entry points. Defines the REST API endpoints (`/search`, `/recommendations`) that interface between the frontend and the vector database.
+- `data/data_fetcher.py`: Handles asynchronous HTTP requests to the Google Books API to dynamically scrape book metadata, covers, and descriptions.
+- `data/data_processor.py`: The core NLP engine. Initializes the HuggingFace pipelines for both semantic embeddings (MiniLM) and emotional classification (DistilRoBERTa). 
+- `data/pipeline.py`: The orchestration script that ties fetching, NLP processing, and ChromaDB insertion together.
+- `import_csv_to_chroma.py`: A utility script for bulk-importing pre-existing static book datasets (CSV) directly into the ChromaDB vector store.
+- `.env`: Stores environment variables (like API keys and local configurations).
 
-When a live fetch succeeds, the results are saved to ChromaDB **in a background thread** with:
-- **Quality filter** — only books with description ≥ 30 words and at least one emotion score > 0.2
-- **ISBN deduplication** — skips books that already exist in the vector store
-- **LRU eviction** — if the DB exceeds 15,000 books, the oldest entries (by `stored_at` timestamp) are deleted first
-- **Zero latency impact** — the save runs asynchronously after the response is sent
+### `/frontend`
+- `src/App.jsx` & `src/main.jsx`: The root React components that manage the global search state and layout structure.
+- `src/components/Hero.jsx`: The landing section containing the primary natural language search input.
+- `src/components/FilterBar.jsx`: Allows users to manually filter semantic searches by traditional constraints (e.g., specific genres or polar emotions).
+- `src/components/ResultsGrid.jsx`: Maps over the semantic search results and renders them dynamically.
+- `src/components/BookCard.jsx`: The individual UI component for a book, displaying its cover, title, author, and calculated match percentage.
+- `src/components/BookModal.jsx`: A detailed pop-up view that renders the full synopsis and the 7-emotion bar chart analysis.
+- `src/components/HowItWorks.jsx`: An infographic section explaining the architecture of the Neural Sentiment Engine to the end user.
+- `src/index.css`: The global stylesheet containing the foundational Tailwind directives and custom CSS classes for the glassmorphic modals and hover effects.
 
-### 🧯 Offline Fallback
+## Setup & Installation
 
-If Google Books fails or returns no usable books, the API falls back entirely to ChromaDB:
-- It searches stored book descriptions semantically with `sentence-transformers/paraphrase-MiniLM-L3-v2`
-- **Top-K Ranked Results** — ChromaDB returns the most semantically similar books first using L2 distance. Only the top-k closest matches are returned, ensuring relevance without hardcoded thresholds
-- It removes duplicate ISBNs
-- It applies the selected category with keyword matching
-- All results are tagged with `source: "offline"`
+### Prerequisites
+- Python 3.9+
+- Node.js 18+
+- npm or yarn
 
----
-
-## 🤖 AI Models Used
-
-### 1. Emotion Analysis Model
-| Property | Detail |
-|----------|--------|
-| **Model Name** | `j-hartmann/emotion-english-distilroberta-base` |
-| **Source** | HuggingFace Hub |
-| **Architecture** | DistilRoBERTa (distilled from RoBERTa-base) |
-| **Task** | Multi-label Text Classification |
-| **Output** | 7 emotion scores per sentence: `joy`, `sadness`, `anger`, `fear`, `surprise`, `disgust`, `neutral` |
-| **How It's Used** | Each sentence of a book's description is scored. We take the **max** score across all sentences per emotion to get the book's emotional "peak" |
-| **Runs On** | Apple MPS (Mac GPU), CUDA (Nvidia GPU), or CPU |
-
-### 2. Semantic Embedding Model
-| Property | Detail |
-|----------|--------|
-| **Model Name** | `sentence-transformers/paraphrase-MiniLM-L3-v2` |
-| **Source** | HuggingFace / Sentence Transformers |
-| **Architecture** | MiniLM (3 layers, ultra-lightweight) |
-| **Task** | Sentence Embedding / Semantic Similarity |
-| **Output** | 384-dimensional dense vector per text |
-| **How It's Used** | Book descriptions are embedded and stored in ChromaDB. At query time, the query is embedded and compared via cosine similarity to find semantically similar books |
-| **Runs On** | CPU (intentional — avoids MPS conflicts on Mac) |
-
-### Tone → Emotion Mapping
-The UI exposes human-friendly tone labels that map to underlying emotion scores:
-
-| Tone (UI) | Emotion Score Used |
-|-----------|-------------------|
-| Happy | `joy` |
-| Sad / Melancholic / Dark / Emotional | `sadness` |
-| Suspenseful / Intense | `fear` |
-| Angry | `anger` |
-| Surprising / Mysterious / Curious | `surprise` |
-| Disturbing | `disgust` |
-| Romantic / Inspiring / Hopeful / Nostalgic / Humorous | `joy` (proxy) |
-| Relaxing / Thoughtful | `neutral` |
-
----
-
-## 🛠️ Tech Stack
-
-### 🎨 Frontend
-| Technology | Purpose |
-|-----------|---------|
-| **React 19 + Vite 7** | Blazing fast UI with HMR |
-| **Vanilla CSS** | Custom design system with CSS variables |
-| **Framer Motion** | Premium animations (staggered cards, modals, transitions) |
-| **Axios** | HTTP client for API calls with AbortController cancellation |
-| **Lucide React** | Icon set |
-
-Key UI features:
-- Sticky glassmorphism navbar with branding
-- Animated mesh gradient background with glowing orbs
-- Compact search bar with example query chips (search on Enter or button click only)
-- **Pill-style filter buttons** for 32 genres and 19 emotional tones
-- **⚡ Live / 🗄️ Offline source badges** on every book card
-- **Client-side tone sorting** — instant reorder with `useMemo`, no API call
-- **"How it Works"** section with feature cards (shown before first search)
-- **Skeleton loading cards** with shimmer animation (replaces spinner)
-- **Book detail modal** — click any card to see full description + animated emotion breakdown bars
-- Dominant emotion badge per book (🌟 Joyful / 😨 Suspense / 💧 Sad / 🔥 Angry / ✨ Surprising / 🌑 Disturbing)
-- Star rating badge on each card
-- Result count indicator
-- Staggered card entrance animations
-- Race-condition-free request management (request ID tracking)
-- Responsive auto-fill grid
-- Production-safe `/api` routing for Docker/Nginx deployments
-- CSS-only card and skeleton layout — no Tailwind dependency required
-- Professional footer with tech credits
-- Friendly error state with "Try Again" button
-
-### ⚙️ Backend
-| Technology | Purpose |
-|-----------|---------|
-| **FastAPI** | High-performance async Python API framework |
-| **Uvicorn** | ASGI server with hot-reload |
-| **LangChain** | AI pipeline orchestration |
-| **langchain-chroma** | ChromaDB integration |
-| **langchain-huggingface** | HuggingFace embeddings wrapper |
-| **HuggingFace Transformers** | Running local AI models |
-| **Sentence Transformers** | Lightweight semantic embedding |
-| **ChromaDB** | Local persistent vector database (10K+ books, self-growing) |
-| **Pandas / NumPy** | Data processing |
-| **Google Books API** | Live book data source |
-| **Python-dotenv** | Environment variable management |
-
-Key backend features:
-- **Hybrid results engine** — Live Google Books results + ChromaDB filler books, deduped by ISBN, targeting 30 books per search
-- **Source tagging** — every book is tagged with `source: "live"` or `source: "offline"`
-- **In-memory response cache** (10-minute TTL) — cache key is `(query, category)` only; tone excluded since sorting is client-side
-- **Thread-safe cache** — protected by `threading.Lock` for concurrent request safety
-- **Cache-on-demand** — live results automatically enrich ChromaDB in a background thread
-- **ISBN deduplication** — prevents duplicate entries in the vector store
-- **LRU eviction** — oldest books are automatically deleted when the DB exceeds 15K entries
-- **Quality filter** — only books with meaningful descriptions and emotion scores are persisted
-- **Warning suppression** — LibreSSL/urllib3 warnings silenced for clean output
-- **Configurable CORS** — restricted to production domain via `ALLOWED_ORIGIN` env var
-
-### 🐳 DevOps
-| Technology | Purpose |
-|-----------|---------|
-| **Docker + Docker Compose** | Containerised deployment |
-| **Nginx** | Frontend reverse proxy in Docker (`/api/*` → backend) |
-| **Hugging Face Spaces** | Docker backend deployment copy in `hf-space/` |
-
----
-
-## 📂 Project Structure
-
-```
-Book Recom./
-├── backend/
-│   ├── app/
-│   │   ├── main.py           # FastAPI app entry, CORS, health check, warning suppression
-│   │   ├── api.py            # /recommend — hybrid fetch + ChromaDB fill + caching + source tagging
-│   │   └── schemas.py        # Pydantic response models (Book schema with source field)
-│   ├── data/
-│   │   ├── data_fetcher.py   # GoogleBooksFetcher — calls Google Books API
-│   │   ├── data_processor.py # DataProcessor — emotion analysis, ChromaDB CRUD, dedup, LRU eviction
-│   │   └── pipeline.py       # Batch ingestion pipeline (offline use)
-│   ├── chroma_db/            # Persisted vector store (10K+ pre-embedded books, self-growing)
-│   ├── requirements.txt      # Python dependencies (pinned versions)
-│   └── Dockerfile
-│
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx           # Main app — state management, client-side tone sorting, request tracking
-│   │   ├── components/
-│   │   │   ├── Navbar.jsx    # Sticky glassmorphism navbar with branding
-│   │   │   ├── Hero.jsx      # Search bar, heading, example query chips
-│   │   │   ├── FilterBar.jsx # Genre + Tone pill filter buttons
-│   │   │   ├── HowItWorks.jsx# Feature cards shown before first search
-│   │   │   ├── ResultsGrid.jsx# Book grid with count, error states, empty states
-│   │   │   ├── BookCard.jsx  # Book card with emotion, rating, and source badges
-│   │   │   ├── BookModal.jsx # Full book detail modal with emotion breakdown bars
-│   │   │   ├── SkeletonCard.jsx # Shimmer loading placeholder cards
-│   │   │   └── Footer.jsx   # Professional footer with tech credits
-│   │   ├── index.css         # Design system — glass-panel, pills, skeleton, modal, animations
-│   │   └── main.jsx          # React entry point
-│   ├── package.json
-│   ├── vite.config.js
-│   ├── nginx.conf            # Docker proxy: /api/* → backend:7860
-│   └── Dockerfile
-│
-├── hf-space/                 # Hugging Face Spaces backend deployment copy
-│   ├── app/                  # Synced FastAPI source
-│   ├── data/                 # Synced data/model pipeline source
-│   ├── README.md             # Space metadata
-│   ├── requirements.txt
-│   └── Dockerfile
-│
-├── docker-compose.yml        # Orchestrates frontend + backend containers
-└── README.md
-```
-
----
-
-## 🔑 API Reference
-
-### `GET /recommend`
-
-Returns a ranked list of book recommendations (up to 30 books via hybrid filling).
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `query` | string | ✅ Yes | Natural language query describing the vibe/plot |
-| `category` | string | ❌ No | Genre filter (e.g., `Fiction`, `Mystery`, `Sci-Fi`) |
-| `tone` | string | ❌ No | Emotional tone (accepted for backward compatibility; sorting is now client-side) |
-| `limit` | int | ❌ No | Requested result limit (default: 16; API targets 30 via hybrid filling) |
-
-**Example:**
-```
-GET /recommend?query=a+lonely+astronaut+searching+for+meaning&category=Sci-Fi
-```
-
-**Response Schema (Book):**
-```json
-{
-  "isbn13": "9780553380163",
-  "title": "The Martian",
-  "authors": "Andy Weir",
-  "categories": "Fiction",
-  "description": "...",
-  "thumbnail": "https://...",
-  "published_year": 2011,
-  "average_rating": 4.4,
-  "joy": 0.72,
-  "sadness": 0.18,
-  "anger": 0.05,
-  "fear": 0.31,
-  "surprise": 0.42,
-  "disgust": 0.03,
-  "neutral": 0.55,
-  "source": "live"
-}
-```
-
-The `source` field indicates where the book came from:
-- `"live"` — freshly fetched from Google Books API with real-time emotion analysis
-- `"offline"` — retrieved from the local ChromaDB vector store
-
-### `GET /`
-Health check — returns API status and a short running message.
-
-### `GET /categories`
-Returns the list of 32 available genre categories for filtering.
-
----
-
-## 🚀 How to Run Locally
-
-### Option 1: Simple Setup (Python + Node) — Recommended
-
-**Step 1: Backend**
+### 1. Backend Setup
+Navigate to the backend directory and install the Python dependencies:
 ```bash
 cd backend
-
-# Create and activate virtual environment
-python3 -m venv venv
-source venv/bin/activate       # Windows: venv\Scripts\activate
-
-# Install dependencies
+python -m venv venv
+source venv/bin/activate  # On Windows use `venv\Scripts\activate`
 pip install -r requirements.txt
+```
 
-# Start the server
+**Environment Variables:**
+Create a `.env` file in the `/backend` directory and add your Google Books API key:
+```env
+GOOGLE_BOOKS_API_KEY="your_api_key_here"
+```
+
+Run the FastAPI server:
+```bash
 python -m uvicorn app.main:app --reload --port 8000
 ```
+*The backend API will be available at http://localhost:8000*
 
-> ⏳ **First run:** The emotion model (~329 MB) will download from HuggingFace. This is one-time only — subsequent starts are instant.
-
-**Step 2: Frontend**
+### 2. Frontend Setup
+Navigate to the frontend directory and install the Node dependencies:
 ```bash
-# In a new terminal
 cd frontend
-npm ci
+npm install
+```
+
+Run the Vite development server:
+```bash
 npm run dev
 ```
+*The frontend application will be available at http://localhost:5173*
 
-**Step 3: Enjoy 🎉**
-Open **http://localhost:5173** in your browser.
-
----
-
-### Option 2: Docker 🐳
-
-Perfect for deployment or consistent environments.
-
-```bash
-# From the root directory
-docker-compose up --build -d
-```
-
-The frontend container serves the React build on port `3000`. Nginx forwards `/api/*` requests to the backend container on its internal port `7860`, while the backend is also exposed locally at `http://localhost:8000`.
-
-| Service | URL |
-|---------|-----|
-| Frontend | http://localhost:3000 |
-| Backend API | http://localhost:8000 |
-| API Docs (Swagger) | http://localhost:8000/docs |
+## Future Scope
+- **Cloud Vector Scaling:** Migrating the local ChromaDB instance to a managed cloud vector database (e.g., Pinecone) to support a massive global book corpus.
+- **User Feedback Loop:** Implementing reinforcement learning by allowing users to "thumbs up/down" recommendations to fine-tune the emotional weights.
+- **Custom LLM Fine-tuning:** Training a specialized language model exclusively on literary critiques to produce even more accurate atmospheric embeddings.
 
 ---
+*Built by Sunny Kant Kumar*
 
-### Troubleshooting
-
-| Issue | Fix |
-|-------|-----|
-| Model download stuck at 0% | Check internet, try `pip install huggingface_hub` then `huggingface-cli download j-hartmann/emotion-english-distilroberta-base` |
-| `LibreSSL` warning | Automatically suppressed in `main.py` — no action needed |
-| CORS error in browser | Make sure backend is running on port 8000 |
-| Empty results | Google Books API has rate limits without a key — add `GOOGLE_BOOKS_API_KEY` in `backend/.env` |
-| Frontend dependencies behave strangely | Run `npm ci` inside `frontend/` to reinstall from `package-lock.json` |
-| MPS errors on Mac | Upgrade to latest PyTorch nightly for Apple Silicon support |
-| "No results" flash on search | Fixed — request ID tracking prevents stale state updates |
-
----
-
-## ☁️ Deployment Guide
-
-This project is designed to be deployed across two free hosting platforms: **Vercel** (for the fast frontend) and **Hugging Face Spaces** (for the AI-heavy backend).
-
-### 1. Backend → Hugging Face Spaces (Docker)
-Hugging Face Spaces provides the necessary computing power to run the PyTorch/Transformers models.
-1. Create a new Space on [Hugging Face](https://huggingface.co/spaces).
-2. Choose **Docker** as the SDK.
-3. Use the synced `hf-space/` folder as the Space source and push it to Hugging Face:
-   ```bash
-   git clone https://huggingface.co/spaces/YourUsername/YourSpaceName my-space-backend
-   cp -R hf-space/. my-space-backend/
-   cd my-space-backend
-   git add .
-   git commit -m "Deploy backend"
-   git push
-   ```
-   If you are already working directly inside the checked-out `hf-space/` directory, commit and push from there:
-   ```bash
-   cd hf-space
-   git add .
-   git commit -m "Deploy backend"
-   git push
-   ```
-4. Go to your Space Settings → **Variables and secrets**, and add a New Secret named `GOOGLE_BOOKS_API_KEY` with your API key.
-
-### 2. Frontend → Vercel
-1. Go to [Vercel](https://vercel.com/new) and import your GitHub repository.
-2. In the setup screen, click **Edit** next to **Root Directory** and type `frontend`.
-3. The Framework Preset will automatically switch to **Vite**.
-4. Open the **Environment Variables** dropdown and add:
-   - Name: `VITE_API_URL`
-   - Value: The direct root URL of your Hugging Face API (e.g., `https://yourusername-spacename.hf.space`).
-5. Click **Deploy**.
-
-For Docker/Nginx deployment, you can omit `VITE_API_URL`; the frontend defaults to `/api`, and Nginx proxies that path to the backend container.
-
----
-
-## 🎯 Example Queries to Try
-
-| Query | Category | Tone |
-|-------|----------|------|
-| *"A dystopian society where books are banned"* | Sci-Fi | Dark |
-| *"A detective solving crimes in Victorian London"* | Mystery | Suspenseful |
-| *"Heartwarming story about friendship and family"* | Fiction | Happy |
-| *"A soldier's trauma and journey home from war"* | History | Sad |
-| *"Self-improvement and building good habits"* | Self-Help | Inspiring |
-| *"A lonely astronaut searching for meaning"* | Sci-Fi | Melancholic |
-| *"Ancient mythology and the gods"* | Fiction | Mysterious |
-
----
-
-## 🚀 Future Roadmap & Potential Enhancements
-
-This project serves as a strong foundation for an AI-native recommendation engine, but there are exciting avenues for future growth:
-
-### 1. User Accounts & Personalised Libraries
-- **Feature**: Allow users to create accounts, save their favourite books, and track their reading history.
-- **Why**: Currently, the engine is stateless. By tracking user preferences, we can fine-tune the recommendation algorithm to favor books aligned with their past likes, essentially creating a personalised "taste profile".
-
-### 2. Large Language Model (LLM) Integration
-- **Feature**: Integrate an open-source LLM (like Llama 3) or OpenAI API to generate dynamic, conversational explanations of *why* a book matches a query.
-- **Why**: Instead of just showing the book and emotion scores, the app could say: *"Because you asked for a rainy Sunday vibe, the melancholic undertones in this book's second act perfectly match your mood."*
-
-### 3. Production Database Migration
-- **Feature**: Migrate from SQLite-backed ChromaDB and an in-memory Python dictionary cache to a managed PostgreSQL (with pgvector) and Redis cache.
-- **Why**: As the dataset scales beyond 100,000 books, a dedicated vector database and distributed cache will ensure high availability, faster semantic search, and the ability to horizontally scale the backend across multiple containers.
-
-### 4. Advanced Filter Criteria (Pacing & Tropes)
-- **Feature**: Add filters for "Pacing" (Fast-paced vs. Slow-burn) and specific literature tropes (e.g., "Enemies to Lovers", "Chosen One").
-- **Why**: Emotion is just one dimension. Combining semantic emotion analysis with pacing and structural tropes provides the ultimate discovery engine for modern fiction readers.
-
-### 5. Multi-Language Support
-- **Feature**: Swap the current English-only DistilRoBERTa model with a multi-lingual embedding and sentiment model (like `xlm-roberta`).
-- **Why**: To expand the engine's capability to search and recommend non-English literature globally.
-
----
-
-## 👤 Author
-
-**Sunny Kant Kumar**
-
-Built with curiosity, caffeine, and a love for books. 📖✨

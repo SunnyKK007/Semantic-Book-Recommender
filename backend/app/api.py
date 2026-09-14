@@ -24,11 +24,9 @@ def _clean_cache():
     if len(_cache) > MAX_CACHE_SIZE:
         _cache.clear()
 
-# Initialize Processor to get embedding function
-# In a production app, we might use dependency injection or a singleton
+processor = DataProcessor(persist_directory="./chroma_db")
 processor = DataProcessor(persist_directory="./chroma_db")
 
-# Initialize Chroma for reading
 db_books = Chroma(
     embedding_function=processor.embedding_function, 
     persist_directory=processor.persist_directory
@@ -176,7 +174,7 @@ def _chromadb_fallback(query: str, category: Optional[str], limit: int) -> List[
     Returns books from the vector store with optional category filtering.
     ChromaDB's top-k already returns results ranked by similarity.
     """
-    print("Falling back to ChromaDB offline mode...")
+    print("fallback: ChromaDB_offline_mode")
     fallback_books = []
     seen_isbns = set()
 
@@ -184,12 +182,12 @@ def _chromadb_fallback(query: str, category: Optional[str], limit: int) -> List[
         # Log ChromaDB collection size for debugging
         try:
             db_count = db_books._collection.count()
-            print(f"ChromaDB contains {db_count} documents.")
+            print(f"chromadb_status: doc_count={db_count}")
         except Exception:
             print("Could not get ChromaDB count.")
 
         results = db_books.similarity_search(query, k=limit + 20)
-        print(f"ChromaDB returned {len(results)} results for query: '{query}'")
+        print(f"chromadb_search: results={len(results)} query='{query}'")
 
         for res in results:
             metadata = res.metadata
@@ -234,7 +232,7 @@ def _chromadb_fallback(query: str, category: Optional[str], limit: int) -> List[
         print(f"ChromaDB fallback error: {e}")
         traceback.print_exc()
 
-    print(f"ChromaDB fallback returning {len(fallback_books)} books.")
+    print(f"fallback_complete: returned={len(fallback_books)}")
     return fallback_books
 
 
@@ -256,12 +254,10 @@ def recommend_books(
             print(f"Cache hit for key: {cache_key}")
             return cached["data"]
     
-    # 0. QUERY AUGMENTATION
     google_query = query
     if category and category != "All" and category in CAT_MAP:
         google_query += f" {CAT_MAP[category]}"
 
-    # 1. TRY LIVE FETCH (Fresh Data)
     live_results = []
     live_success = False
     
@@ -269,68 +265,75 @@ def recommend_books(
         from data.data_fetcher import GoogleBooksFetcher
         
         fetcher = GoogleBooksFetcher()
-        print(f"Fetching live data with query: {google_query}")
+        print(f"live_fetch_start:{google_query}")
         live_results = fetcher.fetch_books(query=google_query, max_results=30)
         
         if live_results:
-            # REAL-TIME EMOTION ANALYSIS
-            print(f"Running real-time emotion analysis on {len(live_results)} live books...")
+            print(f"emotion_analysis_start:{len(live_results)}")
             live_results = processor.process_emotions(live_results)
             live_success = True
             
     except Exception as e:
-        print(f"Live fetch failed: {e}")
+        print(f"live_fetch_error:{e}")
 
-    # 2. BUILD RESULTS (Hybrid: Live first, then fill from ChromaDB)
     TARGET_TOTAL = 30  # Aim for this many total results
     final_books = []
     seen_isbns = set()
 
     if live_success and live_results:
-        # --- Step A: Add live results first ---
+        print("chromadb_bg_sync_start")
+        import threading
+        threading.Thread(target=processor.update_vector_store_safe, args=(live_results,), daemon=True).start()
+        
+        incoming_isbns = [str(b.get("isbn13")) for b in live_results if b.get("isbn13")]
+        existing_isbns = processor.get_existing_isbns(incoming_isbns) if incoming_isbns else set()
+        truly_live_isbns = set(incoming_isbns) - existing_isbns
+        
         for b_dict in live_results:
-            isbn = b_dict.get("isbn13")
-            if isbn not in seen_isbns:
-                final_books.append(_build_book_from_dict(b_dict))
-                seen_isbns.add(isbn)
-
-        live_count = len(final_books)
-        print(f"Live fetch returned {live_count} unique books.")
-
-        # Background: save live results to ChromaDB (async, non-blocking)
-        threading.Thread(
-            target=_save_to_chromadb,
-            args=(live_results,),
-            daemon=True
-        ).start()
-
-        # --- Step B: Fill remaining slots from ChromaDB ---
-        remaining = TARGET_TOTAL - live_count
-        if remaining > 0:
-            print(f"Filling {remaining} remaining slots from ChromaDB...")
-            filler_books = _chromadb_fallback(query, category, remaining + 10)
-            filler_added = 0
-            for fb in filler_books:
-                if fb.isbn13 not in seen_isbns:
-                    final_books.append(fb)
-                    seen_isbns.add(fb.isbn13)
-                    filler_added += 1
-                    if filler_added >= remaining:
-                        break
-            print(f"Added {filler_added} filler books from ChromaDB. Total: {len(final_books)}")
-
+            final_books.append(_build_book_from_dict(b_dict))
+            seen_isbns.add(b_dict.get("isbn13"))
     else:
-        # --- API FAILED: Fall back entirely to ChromaDB offline ---
-        final_books = _chromadb_fallback(query, category, TARGET_TOTAL)
-        print(f"Full offline fallback: {len(final_books)} books from ChromaDB.")
-
-    # 3. Tone sorting is handled client-side for instant UX.
-    #    Backend still accepts tone param for backward compatibility,
-    #    but we no longer sort here to avoid caching issues.
-
-    result = final_books[:TARGET_TOTAL]
-
-    # --- Store in cache ---
+        truly_live_isbns = set()
+        
+    chroma_books = _chromadb_fallback(query, category, 40)
+    for fb in chroma_books:
+        if fb.isbn13 not in seen_isbns:
+            final_books.append(fb)
+            seen_isbns.add(fb.isbn13)
+    
+    for fb in final_books:
+        if fb.isbn13 in truly_live_isbns:
+            fb.source = "live"
+        else:
+            fb.source = "offline"
+            
+    from collections import Counter
+    authors_list = [b.authors for b in final_books if b.authors and b.authors != "Unknown Author" and b.authors != "Unknown"]
+    primary_author = None
+    if authors_list:
+        most_common = Counter(authors_list).most_common(1)
+        if most_common[0][1] > 2:
+            primary_author = most_common[0][0]
+            
+    q_lower = query.strip().lower()
+    
+    def rank_score(b):
+        score = 0
+        if primary_author and b.authors == primary_author:
+            score -= 2000
+            
+        title = b.title.lower()
+        if q_lower == title:
+            score -= 1000
+        elif q_lower in title:
+            score -= (100 - len(title))
+            
+        return score
+        
+    final_books.sort(key=rank_score)
+            
+    print(f"search_complete: total={len(final_books)} primary_author='{primary_author}'")
+    result = final_books
     with _cache_lock:
         _cache[cache_key] = {"data": result, "ts": time.time()}
     print(f"Cache stored for key: {cache_key} ({len(result)} books)")

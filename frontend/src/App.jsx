@@ -45,23 +45,19 @@ function App() {
   const [error, setError] = useState(null);
   const [selectedBook, setSelectedBook] = useState(null);
   
-  // Keep track of the current request to allow cancellation
   const abortControllerRef = useRef(null);
-  // Track each request with an ID to prevent stale updates
   const requestIdRef = useRef(0);
 
   const searchBooks = async (overrideQuery) => {
     const searchQuery = typeof overrideQuery === 'string' ? overrideQuery : query;
     if (!searchQuery) return;
     
-    // Cancel any previous requests
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
     const controller = new AbortController();
     abortControllerRef.current = controller;
     
-    // Track this specific request
     const thisRequestId = ++requestIdRef.current;
 
     setLoading(true);
@@ -79,7 +75,6 @@ function App() {
         signal: controller.signal
       });
       
-      // Only update state if this is still the latest request
       if (thisRequestId === requestIdRef.current) {
         setRawBooks(res.data);
         setLoading(false);
@@ -95,23 +90,23 @@ function App() {
     }
   };
 
-  // Automatically re-fetch when category changes (needs new data from API)
   useEffect(() => {
     if (hasSearched && query) {
       searchBooks();
     }
   }, [category]);
 
-  // Sort books by tone on the frontend — instant, no API call needed
   const books = useMemo(() => {
     if (!rawBooks.length) return rawBooks;
-    if (!tone || tone === "All") return rawBooks;
+    
+    let processedBooks = [...rawBooks];
+
+    if (!tone || tone === "All") return processedBooks;
 
     const emotionField = TONE_EMOTION_MAP[tone];
-    if (!emotionField) return rawBooks;
+    if (!emotionField) return processedBooks;
 
-    // Create a sorted copy (don't mutate the original)
-    return [...rawBooks].sort((a, b) => {
+    return processedBooks.sort((a, b) => {
       const scoreA = a[emotionField] || 0;
       const scoreB = b[emotionField] || 0;
       return scoreB - scoreA; // Descending: highest emotion first
@@ -119,54 +114,39 @@ function App() {
   }, [rawBooks, tone]);
 
   return (
-    <div style={{ minHeight: '100vh', width: '100%', position: 'relative' }}>
-      {/* Animated Background */}
-      <div className="mesh-bg" />
-
-      {/* Dot pattern overlay */}
-      <div
-        style={{
-          position: 'fixed', inset: 0, zIndex: 0, opacity: 0.025, pointerEvents: 'none',
-          backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)',
-          backgroundSize: '32px 32px',
-        }}
-      />
-
+    <div className="bg-surface font-body-md text-on-surface antialiased selection:bg-slate-100 selection:text-slate-900 min-h-screen">
       <Navbar />
 
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 10 }}>
-
-        <header style={{ paddingTop: '140px', paddingBottom: '60px', textAlign: 'center', position: 'relative' }}>
+      <main className="w-full pt-20 bg-[#faf8ff] min-h-[calc(100vh-160px)]">
+        <div className="flex flex-col w-full">
           <Hero 
             query={query} 
             setQuery={setQuery} 
             searchBooks={searchBooks} 
             hasSearched={hasSearched} 
           />
+          
           <FilterBar 
             category={category} 
             setCategory={setCategory} 
             tone={tone} 
             setTone={setTone} 
           />
-        </header>
 
-        {!hasSearched && <HowItWorks />}
+          <ResultsGrid 
+            loading={loading}
+            error={error}
+            books={books}
+            hasSearched={hasSearched}
+            setSelectedBook={setSelectedBook}
+            query={query}
+          />
+          
+          <HowItWorks />
+        </div>
+      </main>
 
-        <ResultsGrid 
-          loading={loading}
-          error={error}
-          books={books}
-          hasSearched={hasSearched}
-          searchBooks={searchBooks}
-          setQuery={setQuery}
-          setCategory={setCategory}
-          setTone={setTone}
-          setSelectedBook={setSelectedBook}
-        />
-
-        <Footer />
-      </div>
+      <Footer />
 
       {/* ===== BOOK MODAL ===== */}
       {selectedBook && (

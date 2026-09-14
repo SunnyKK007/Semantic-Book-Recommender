@@ -9,8 +9,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# In production set ALLOWED_ORIGIN=https://semantic-book-recommender.vercel.app
-# Leave unset (or set to *) for local development
 ALLOWED_ORIGIN = os.getenv("ALLOWED_ORIGIN", "*")
 origins = [ALLOWED_ORIGIN] if ALLOWED_ORIGIN != "*" else ["*"]
 

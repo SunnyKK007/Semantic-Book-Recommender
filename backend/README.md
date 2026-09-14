@@ -1,6 +1,6 @@
 ---
 title: Semantic Book Recommender API
-emoji: 
+emoji: "📚"
 colorFrom: purple
 colorTo: blue
 sdk: docker

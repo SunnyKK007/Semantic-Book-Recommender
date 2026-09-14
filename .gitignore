@@ -6,6 +6,9 @@ venv/
 .env
 .DS_Store
 
+# Database
+backend/chroma_db/
+
 # React/Node
 node_modules/
 dist/

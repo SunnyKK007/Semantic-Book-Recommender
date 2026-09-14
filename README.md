@@ -6,7 +6,7 @@ Traditional book recommendation systems rely heavily on rigid metadata: titles, 
 **BookSense** was built to bridge this gap. It is a full-stack, AI-powered semantic search engine that leverages Natural Language Processing (NLP) to retrieve literature based on the *emotional* and *atmospheric* context of a user's query rather than simple keyword matching.
 
 ## Live Demo
-[Try it Live → https://booksense-demo.vercel.app](https://booksense-demo.vercel.app/)
+[Try it Live → https://semantic-book-recommender-five.vercel.app/](https://semantic-book-recommender-five.vercel.app/)
 
 ## Key Features
 - **Vibe-Based Search:** Search for books using natural language ("a cozy rainy mystery").

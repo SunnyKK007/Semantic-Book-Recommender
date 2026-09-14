@@ -1,4 +1,4 @@
-# **BookSense:** Semantic Book Recommendation Engine
+# **BookSense** 
 
 ## Overview
 Traditional book recommendation systems rely heavily on rigid metadata: titles, authors, and strict genre categorizations. However, readers often search for books based on abstract concepts, specific atmospheric moods, or emotional trajectories (e.g., "A dystopian sci-fi with a melancholic, rainy atmosphere and deep existential dread"). 

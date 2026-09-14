@@ -66,7 +66,7 @@ function App() {
     setHasSearched(true);
     
     try {
-      const params = { query: searchQuery, _t: Date.now() };
+      const params = { query: searchQuery };
       if (category !== "All") params.category = category;
       // Don't send tone to backend — we sort client-side now
 

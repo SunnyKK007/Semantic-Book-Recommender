@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query, Response
+from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
 from app.schemas import Book
 from data.data_processor import DataProcessor
@@ -9,21 +9,8 @@ import threading
 
 router = APIRouter()
 
-# --- Simple in-memory cache (TTL = 10 minutes) ---
-_cache: dict = {}
-_cache_lock = threading.Lock()
-CACHE_TTL = 600  # seconds
-MAX_CACHE_SIZE = 1000
 
-def _clean_cache():
-    """Remove expired items or clear if size exceeds limit."""
-    now = time.time()
-    expired = [k for k, v in _cache.items() if (now - v["ts"]) > CACHE_TTL]
-    for k in expired:
-        _cache.pop(k, None)
-    if len(_cache) > MAX_CACHE_SIZE:
-        _cache.clear()
-
+processor = DataProcessor(persist_directory="./chroma_db")
 processor = DataProcessor(persist_directory="./chroma_db")
 
 db_books = Chroma(
@@ -237,25 +224,14 @@ def _chromadb_fallback(query: str, category: Optional[str], limit: int) -> List[
 
 @router.get("/recommend", response_model=List[Book])
 def recommend_books(
-    response: Response,
     query: str,
     category: Optional[str] = None,
     tone: Optional[str] = None,
     limit: int = 16
 ):
-    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
-    response.headers["Pragma"] = "no-cache"
     print(f"Request: query='{query}', category='{category}', tone='{tone}'")
 
-    # --- Cache check (tone excluded — sorting is done client-side) ---
-    cache_key = (query.strip().lower(), category)
-    with _cache_lock:
-        _clean_cache()
-        cached = _cache.get(cache_key)
-        if cached and (time.time() - cached["ts"]) < CACHE_TTL:
-            print(f"Cache hit for key: {cache_key}")
-            return cached["data"]
-    
+
     google_query = query
     if category and category != "All" and category in CAT_MAP:
         google_query += f" {CAT_MAP[category]}"
@@ -296,14 +272,13 @@ def recommend_books(
             seen_isbns.add(b_dict.get("isbn13"))
     else:
         truly_live_isbns = set()
-
-    # Always enrich with semantically similar books from ChromaDB
+        
     chroma_books = _chromadb_fallback(query, category, 40)
     for fb in chroma_books:
         if fb.isbn13 not in seen_isbns:
             final_books.append(fb)
             seen_isbns.add(fb.isbn13)
-
+    
     for fb in final_books:
         if fb.isbn13 in truly_live_isbns:
             fb.source = "live"
@@ -324,20 +299,19 @@ def recommend_books(
         score = 0
         if primary_author and b.authors == primary_author:
             score -= 2000
+            
         title = b.title.lower()
         if q_lower == title:
             score -= 1000
         elif q_lower in title:
             score -= (100 - len(title))
+            
         return score
         
     final_books.sort(key=rank_score)
             
     print(f"search_complete: total={len(final_books)} primary_author='{primary_author}'")
     result = final_books
-    with _cache_lock:
-        _cache[cache_key] = {"data": result, "ts": time.time()}
-    print(f"Cache stored for key: {cache_key} ({len(result)} books)")
 
     return result
 

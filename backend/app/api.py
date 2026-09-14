@@ -293,12 +293,11 @@ def recommend_books(
             seen_isbns.add(b_dict.get("isbn13"))
     else:
         truly_live_isbns = set()
-        
-    chroma_books = _chromadb_fallback(query, category, 40)
-    for fb in chroma_books:
-        if fb.isbn13 not in seen_isbns:
-            final_books.append(fb)
-            seen_isbns.add(fb.isbn13)
+        chroma_books = _chromadb_fallback(query, category, 50)
+        for fb in chroma_books:
+            if fb.isbn13 not in seen_isbns:
+                final_books.append(fb)
+                seen_isbns.add(fb.isbn13)
     
     for fb in final_books:
         if fb.isbn13 in truly_live_isbns:

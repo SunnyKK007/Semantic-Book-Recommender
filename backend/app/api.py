@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Response
 from typing import List, Optional
 from app.schemas import Book
 from data.data_processor import DataProcessor
@@ -237,11 +237,14 @@ def _chromadb_fallback(query: str, category: Optional[str], limit: int) -> List[
 
 @router.get("/recommend", response_model=List[Book])
 def recommend_books(
+    response: Response,
     query: str,
     category: Optional[str] = None,
     tone: Optional[str] = None,
     limit: int = 16
 ):
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
     print(f"Request: query='{query}', category='{category}', tone='{tone}'")
 
     # --- Cache check (tone excluded — sorting is done client-side) ---

@@ -9,7 +9,7 @@ import Footer from './components/Footer';
 import BookModal from './components/BookModal';
 import './index.css';
 
-const DEFAULT_API_URL = import.meta.env.PROD ? "/api" : "http:
+const DEFAULT_API_URL = import.meta.env.PROD ? "/api" : "http://localhost:8000";
 const API_URL = (import.meta.env.VITE_API_URL || DEFAULT_API_URL).replace(/\/$/, "");
 const TONE_EMOTION_MAP = {
   "Happy": "joy",
